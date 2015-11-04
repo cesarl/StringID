@@ -4,6 +4,7 @@
 	.ProjectName		= 'StringIDManager'
 	.ProjectDestPath	= '../Projects/'
 	.ProjectPath		= '../Projects/'
+	.ExternalPath		= '../External/'
 
 	.CompilerIncludesPaths = ' /I$ProjectPath$'
 
@@ -13,13 +14,16 @@
 	VCXProject( '$ProjectName$-proj' )
 	{
 		.ProjectOutput				= '$ProjectDestPath$\$ProjectName$.vcxproj'
-		.ProjectInputPaths			= { '$ProjectPath$\' }
+		.ProjectInputPaths			= { '$ProjectPath$\', '$ExternalPath$\', '../src/', '../manager/' }
         .ProjectBasePath            = { '$ProjectPath$\' }
 
 		.ProjectAllowedFileExtensions = { '.h' '.cpp' '.c' '.hh' '.hpp' '.inl' }
 
-		// Vendors
 		.IncludeSearchPath               = '$ProjectPath$\'
+		                                 + '$ExternalPath$\'
+		                                 + '../Src/'
+		                                 + '../Manager/'
+
 	}
 
 	// Unity

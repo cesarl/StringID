@@ -198,3 +198,4 @@ FakesAssemblies/
 *.sln
 *.vcxproj
 *.filters
+FastBuild/report.html
