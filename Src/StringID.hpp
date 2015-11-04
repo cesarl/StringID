@@ -1,23 +1,17 @@
 #pragma once
 
 /*
-Configs :
-
-#define STRINGID_DEBUG_ENABLED      ( 0 by default )
-#define STRINGID_SUPPORT_STD_STRING ( 0 by default )
-
-If true, StringID can hash string at runtime
-#define STRINGID_RT_HASH_ENABLED    ( 1 by default )
-
-Add generate StringID generated at runtime to a database
-#define STRINGID_RT_DATABASE        ( 0 by default )
-
+/!\ Set your configs in StringID_Config.hpp
 */
+
+#include "StringID_Config.hpp"
 
 #define STRINGID_INVALID_ID 0
 
-#ifndef STRINGID_RT_HASH_ENABLED
-#define STRINGID_RT_HASH_ENABLED 1
+#if STRINGID_64
+typedef uint64_t                    StringIDType;
+#else
+typedef uint32_t                    StringIDType;
 #endif
 
 class StringID
@@ -40,7 +34,7 @@ public:
 	}
 #endif
 
-	inline StringID(const uint64_t id)
+	inline StringID(const StringIDType id)
 		: _id(id)
 #if STRINGID_DEBUG_ENABLED
 		, _str(nullptr)
@@ -121,9 +115,9 @@ public:
 		return _id != STRINGID_INVALID_ID;
 	}
 private:
-	uint64_t    _id;
+	StringIDType _id;
 #if STRINGID_DEBUG_ENABLED
-	const char *_str;
+	const char  *_str;
 #endif
 };
 
@@ -144,7 +138,7 @@ StringID::StringID(const char *str)
 }
 #endif
 
-StringID::StringID(const uint64_t id)
+StringID::StringID(const StringIDType id)
 	: _id(id)
 #if STRINGID_DEBUG_ENABLED
 	, _str(nullptr)
@@ -172,7 +166,7 @@ StringID::StringID(const StringID &o)
 #endif
 {}
 
-StringID::StringID &operator=(const StringID &o)
+StringID &StringID::operator=(const StringID &o)
 	: _id(o._id)
 #if STRINGID_DEBUG_ENABLED
 	, _str(o._str)
@@ -181,7 +175,7 @@ StringID::StringID &operator=(const StringID &o)
 	return *this;
 }
 
-StringID::StringID &operator=(StringID &&o)
+StringID &StringID::operator=(StringID &&o)
 	: _id(std::move(o._id))
 #if STRINGID_DEBUG_ENABLED
 	, _str(std::move(o._str))
