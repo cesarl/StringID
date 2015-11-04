@@ -1,0 +1,99 @@
+// Core
+//------------------------------------------------------------------------------
+{
+	.ProjectName		= 'StringIDManager'
+	.ProjectDestPath	= '../Projects/'
+	.ProjectPath		= '../Projects/'
+
+	.CompilerIncludesPaths = ' /I$ProjectPath$'
+
+
+	// Visual Studio Project Generation
+	//--------------------------------------------------------------------------
+	VCXProject( '$ProjectName$-proj' )
+	{
+		.ProjectOutput				= '$ProjectDestPath$\$ProjectName$.vcxproj'
+		.ProjectInputPaths			= { '$ProjectPath$\' }
+        .ProjectBasePath            = { '$ProjectPath$\' }
+
+		.ProjectAllowedFileExtensions = { '.h' '.cpp' '.c' '.hh' '.hpp' '.inl' }
+
+		// Vendors
+		.IncludeSearchPath               = '$ProjectPath$\'
+	}
+
+	// Unity
+	//--------------------------------------------------------------------------
+
+        .UnityNumFiles   = 20
+        .UnityInputPath  = { '$ProjectDestPath$\' }
+
+	{
+		// Windows
+		Unity( '$ProjectName$-Unity-Windows' )
+		{
+	    	.UnityInputPath              = { }
+
+		    .UnityOutputPath			= '$OutputBase$\Unity\$ProjectPath$\'
+		}
+	}
+
+	//--------------------------------------------------------------------------
+	ForEach( .Config in .ProjectConfigs )
+	{
+		Using( .Config )
+
+		.IncludeSearchPath          + '$ProjectPath$\'
+	}
+
+
+
+	// Windows
+	//--------------------------------------------------------------------------
+	ForEach( .Config in .Configs_Windows_MSVC )
+	{
+		Using( .Config )
+		.OutputBase + '\$Platform$-$Config$'
+
+		// Static Library
+		ObjectList( '$ProjectName$-Lib-$Platform$-$Config$' )
+		{
+			// Input (Unity)
+			.CompilerInputUnity			= '$ProjectName$-Unity-Windows'
+
+			.CompilerInputPath			= '$ProjectPath$'
+
+			// Output
+			.CompilerOutputPath			= '$OutputBase$\$ProjectName$\'
+ 			.LibrarianOutput 			= '$OutputBase$\$ProjectName$\$ProjectName$.lib'
+
+ 			.CompilerOptions            + ' $CompilerIncludesPaths$'
+		}
+
+		Executable( '$ProjectName$-Exe-$Platform$-$Config$' )
+		{
+
+			.Libraries					= { }
+			.LinkerOutput				= '$OutputBase$/$ProjectName$.exe'
+			.LinkerOptions				+ ' /SUBSYSTEM:CONSOLE'
+
+		}
+		Alias( '$ProjectName$-$Platform$-$Config$' ) { .Targets = '$ProjectName$-Exe-$Platform$-$Config$' }
+
+	}
+
+	// Aliases
+	//--------------------------------------------------------------------------
+	// Per-Config
+	Alias( '$ProjectName$-Debug' )		{ .Targets = { '$ProjectName$-X64-Debug' } }
+	Alias( '$ProjectName$-Release' )	{ .Targets = { '$ProjectName$-X64-Release' } }
+
+	// Per-Platform
+	Alias( '$ProjectName$-X64' )		{ .Targets = { '$ProjectName$-X64-Debug', '$ProjectName$-X64-Release' } }
+
+	// All
+	Alias( '$ProjectName$' )
+	{
+		.Targets = { '$ProjectName$-Debug', '$ProjectName$-Release' }
+	}
+}
