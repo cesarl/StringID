@@ -3,10 +3,10 @@
 {
 	.ProjectName		= 'StringIDManager'
 	.ProjectDestPath	= '../Projects/'
-	.ProjectPath		= '../Projects/'
+	.ProjectPath		= '../Manager/'
 	.ExternalPath		= '../External/'
 
-	.CompilerIncludesPaths = ' /I$ProjectPath$'
+	.CompilerIncludesPaths = ' /I$ProjectPath$ /I$ExternalPath$'
 
 
 	// Visual Studio Project Generation
@@ -14,7 +14,7 @@
 	VCXProject( '$ProjectName$-proj' )
 	{
 		.ProjectOutput				= '$ProjectDestPath$\$ProjectName$.vcxproj'
-		.ProjectInputPaths			= { '$ProjectPath$\', '$ExternalPath$\', '../src/', '../manager/' }
+		.ProjectInputPaths			= { '$ProjectPath$\', '$ExternalPath$\', '../src/' }
         .ProjectBasePath            = { '$ProjectPath$\' }
 
 		.ProjectAllowedFileExtensions = { '.h' '.cpp' '.c' '.hh' '.hpp' '.inl' }
@@ -22,35 +22,8 @@
 		.IncludeSearchPath               = '$ProjectPath$\'
 		                                 + '$ExternalPath$\'
 		                                 + '../Src/'
-		                                 + '../Manager/'
 
 	}
-
-	// Unity
-	//--------------------------------------------------------------------------
-
-        .UnityNumFiles   = 20
-        .UnityInputPath  = { '$ProjectDestPath$\' }
-
-	{
-		// Windows
-		Unity( '$ProjectName$-Unity-Windows' )
-		{
-	    	.UnityInputPath              = { }
-
-		    .UnityOutputPath			= '$OutputBase$\Unity\$ProjectPath$\'
-		}
-	}
-
-	//--------------------------------------------------------------------------
-	ForEach( .Config in .ProjectConfigs )
-	{
-		Using( .Config )
-
-		.IncludeSearchPath          + '$ProjectPath$\'
-	}
-
-
 
 	// Windows
 	//--------------------------------------------------------------------------
@@ -62,10 +35,7 @@
 		// Static Library
 		ObjectList( '$ProjectName$-Lib-$Platform$-$Config$' )
 		{
-			// Input (Unity)
-			.CompilerInputUnity			= '$ProjectName$-Unity-Windows'
-
-			.CompilerInputPath			= '$ProjectPath$'
+			.CompilerInputPath			= { '$ProjectPath$\' }
 
 			// Output
 			.CompilerOutputPath			= '$OutputBase$\$ProjectName$\'
@@ -77,7 +47,7 @@
 		Executable( '$ProjectName$-Exe-$Platform$-$Config$' )
 		{
 
-			.Libraries					= { }
+			.Libraries					= { '$ProjectName$-Lib-$Platform$-$Config$' }
 			.LinkerOutput				= '$OutputBase$/$ProjectName$.exe'
 			.LinkerOptions				+ ' /SUBSYSTEM:CONSOLE'
 

@@ -59,12 +59,12 @@
 #if !defined(__FNV_H__)
 #define __FNV_H__
 
-#include <sys/types.h>
+#include <stdint.h>
 
 #define FNV_VERSION "5.0.2"	/* @(#) FNV Version */
 
 
-typedef u_int32_t Fnv32_t;
+typedef uint32_t Fnv32_t;
 
 /*
 * 32 bit magic FNV-0 and FNV-1 prime
@@ -94,7 +94,7 @@ typedef u_int32_t Fnv32_t;
 * NOTE: To use the recommended 32 bit FNV-1 hash, use FNV1_32_INIT as the hval
 *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
 */
-Fnv32_t fnv_32_str(char *buf, Fnv32_t hashval)
+Fnv32_t fnv_32_str(char *str, Fnv32_t hval)
 {
 	unsigned char *s = (unsigned char *)str;	/* unsigned string */
 
@@ -131,7 +131,7 @@ Fnv32_t fnv_32_str(char *buf, Fnv32_t hashval)
 * NOTE: To use the recommended 32 bit FNV-1a hash, use FNV1_32A_INIT as the
 *  	 hval arg on the first call to either fnv_32a_buf() or fnv_32a_str().
 */
-Fnv32_t fnv_32a_str(char *buf, Fnv32_t hashval)
+Fnv32_t fnv_32a_str(char *str, Fnv32_t hval)
 {
 	unsigned char *s = (unsigned char *)str;	/* unsigned string */
 
@@ -156,7 +156,7 @@ Fnv32_t fnv_32a_str(char *buf, Fnv32_t hashval)
 }
 
 
-typedef u_int64_t Fnv64_t;
+typedef uint64_t Fnv64_t;
 
 /*
 * 64 bit magic FNV-0 and FNV-1 prime
@@ -186,7 +186,7 @@ typedef u_int64_t Fnv64_t;
 * NOTE: To use the recommended 64 bit FNV-1 hash, use FNV1_64_INIT as the hval
 *	 argument on the first call to either fnv_64_buf() or fnv_64_str().
 */
-Fnv64_t fnv_64_str(char *buf, Fnv64_t hashval)
+Fnv64_t fnv_64_str(char *str, Fnv64_t hval)
 {
 	unsigned char *s = (unsigned char *)str;	/* unsigned string */
 
@@ -224,7 +224,7 @@ Fnv64_t fnv_64_str(char *buf, Fnv64_t hashval)
 * NOTE: To use the recommended 64 bit FNV-1a hash, use FNV1A_64_INIT as the
 * 	 hval arg on the first call to either fnv_64a_buf() or fnv_64a_str().
 */
-Fnv64_t fnv_64a_str(char *buf, Fnv64_t hashval)
+Fnv64_t fnv_64a_str(char *str, Fnv64_t hval)
 {
 	unsigned char *s = (unsigned char *)str;	/* unsigned string */
 

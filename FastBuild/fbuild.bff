@@ -77,9 +77,9 @@ Compiler( 'Compiler-x64' )
   // Optimizations
   .CompilerDebugOptimizations   = ' /MDd /Od /RTC1 /GS /Oy- /GR-' //analyze
   .CompilerReleaseOptimizations = ' /MD /Ox /Oy /Oi /GS- /GF /GL /Gy /Gw /GR- ' //analyze
-  .LibrarianDebugOptimizations  = ''
+  .LibrarianDebugOptimizations  = ' '
   .LibrarianReleaseOptimizations  = ' /LTCG'
-  .LinkerDebugOptimizations   = ''
+  .LinkerDebugOptimizations   = ' '
   .LinkerReleaseOptimizations   = ' /LTCG /OPT:REF,ICF'
 
   .BaseIncludePaths   = ' /I"./"'
@@ -112,7 +112,7 @@ Compiler( 'Compiler-x64' )
 
   .LinkerOptions      + ' /MACHINE:X64'
   .Platform           = 'x64'
-  .LinkerOptions      + ' /LIBPATH:"$WindowsLibPaths$/x64" /LIBPATH:"$VSBasePath$/VC/lib/amd64" /LIBPATH:"$VSBasePath$/VC/atlmfc/lib/amd64" /LIBRARYPATH:"$WindowsSDKBasePath$/lib/winv6.3/um/x64"'
+  .LinkerOptions      + ' /LIBPATH:"$WindowsLibPaths$/x64" /LIBPATH:"$VSBasePath$/VC/lib/amd64" /LIBPATH:"$VSBasePath$/VC/atlmfc/lib/amd64" '
 ]
 .X64DebugConfig =
 [
