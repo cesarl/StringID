@@ -30,7 +30,7 @@ STRINGID_RT_HASH_ENABLED     0
 // Detect collisions at runtime
 // It'll enable database
 #if STRINGID_RT_HASH_ENABLED
-    #define STRINGID_SUPPORT_STD_STRING 0
+    #define STRINGID_SUPPORT_STD_STRING 1
 #endif
 
 //If 0, it'll be 32

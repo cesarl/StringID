@@ -34,7 +34,8 @@ StringID_Database StringIDDB;
 
 const char *StringID_Database::addLiteralString(const char *str, StringIDType id)
 {
-	return str;
+	// for the moment we copy all
+	return addDynamicString(str, id);
 }
 
 const char *StringID_Database::addDynamicString(const char *str, StringIDType id)
@@ -46,8 +47,12 @@ const char *StringID_Database::addDynamicString(const char *str, StringIDType id
 		{
 			STRINGID_COLLISION(str, find->second, id);
 		}
+		return find->second;
 	}
-	return nullptr;
+	char *copy = (char*)malloc(sizeof(char) * strlen(str));
+	strcpy(copy, str);
+	_map.insert(std::make_pair(id, copy));
+	return copy;
 }
 
 

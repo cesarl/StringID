@@ -94,9 +94,9 @@ typedef uint32_t Fnv32_t;
 * NOTE: To use the recommended 32 bit FNV-1 hash, use FNV1_32_INIT as the hval
 *	 argument on the first call to either fnv_32_buf() or fnv_32_str().
 */
-Fnv32_t fnv_32_str(char *str, Fnv32_t hval)
+Fnv32_t fnv_32_str(const char *str, Fnv32_t hval)
 {
-	unsigned char *s = (unsigned char *)str;	/* unsigned string */
+	const unsigned char *s = (const unsigned char *)str;	/* unsigned string */
 
 	/*
 	* FNV-1 hash each octet in the buffer
@@ -131,9 +131,9 @@ Fnv32_t fnv_32_str(char *str, Fnv32_t hval)
 * NOTE: To use the recommended 32 bit FNV-1a hash, use FNV1_32A_INIT as the
 *  	 hval arg on the first call to either fnv_32a_buf() or fnv_32a_str().
 */
-Fnv32_t fnv_32a_str(char *str, Fnv32_t hval)
+Fnv32_t fnv_32a_str(const char *str, Fnv32_t hval)
 {
-	unsigned char *s = (unsigned char *)str;	/* unsigned string */
+	const unsigned char *s = (const unsigned char *)str;	/* unsigned string */
 
 	/*
 	* FNV-1a hash each octet in the buffer
@@ -186,9 +186,9 @@ typedef uint64_t Fnv64_t;
 * NOTE: To use the recommended 64 bit FNV-1 hash, use FNV1_64_INIT as the hval
 *	 argument on the first call to either fnv_64_buf() or fnv_64_str().
 */
-Fnv64_t fnv_64_str(char *str, Fnv64_t hval)
+Fnv64_t fnv_64_str(const char *str, Fnv64_t hval)
 {
-	unsigned char *s = (unsigned char *)str;	/* unsigned string */
+	const unsigned char *s = (const unsigned char *)str;	/* unsigned string */
 
 	/*
 	* FNV-1 hash each octet of the string
@@ -224,9 +224,9 @@ Fnv64_t fnv_64_str(char *str, Fnv64_t hval)
 * NOTE: To use the recommended 64 bit FNV-1a hash, use FNV1A_64_INIT as the
 * 	 hval arg on the first call to either fnv_64a_buf() or fnv_64a_str().
 */
-Fnv64_t fnv_64a_str(char *str, Fnv64_t hval)
+Fnv64_t fnv_64a_str(const char *str, Fnv64_t hval)
 {
-	unsigned char *s = (unsigned char *)str;	/* unsigned string */
+	const unsigned char *s = (const unsigned char *)str;	/* unsigned string */
 
 	/*
 	* FNV-1a hash each octet of the string

@@ -12,6 +12,29 @@
 
 #if STRINGID_RT_HASH_ENABLED
 #include "fnv.h"
+
+#if STRINGID_64
+static StringIDType __lastStringIDHash = FNV1A_64_INIT;
+#else
+static StringIDType __lastStringIDHash = FNV1A_32_INIT;
+#endif
+
+#if STRINGID_64
+static StringIDType StringIDHash64(const char *str)
+{
+	__lastStringIDHash = fnv_64a_str(str, __lastStringIDHash);
+	return __lastStringIDHash;
+}
+#define STRINGID_HASH(str) StringIDHash64(str)
+#else
+static StringIDType StringIDHash32(const char *str)
+{
+	__lastStringIDHash = fnv_32a_str(str, __lastStringIDHash);
+	return __lastStringIDHash;
+}
+#define STRINGID_HASH(str) StringIDHash32(str)
+#endif
+
 #endif
 
 typedef const char*& StrPtr;
@@ -82,7 +105,7 @@ StringID::StringID(const char *str, const StringIDType id)
 #if STRINGID_RT_HASH_ENABLED
 StringID::StringID(StringIDCharWrapper str)
 {
-	_id = 0; // TODO GENERATE ID
+	_id = STRINGID_HASH(str.val);
 #if STRINGID_DEBUG_ENABLED
 	_str =
 #endif
@@ -92,7 +115,7 @@ StringID::StringID(StringIDCharWrapper str)
 template <int N>
 StringID::StringID(const char(&str)[N])
 {
-	_id = 0; // TODO GENERATE ID
+	_id = STRINGID_HASH(str);
 	STRINGID_DB_ADD_LITERAL(str, _id);
 #if STRINGID_DEBUG_ENABLED
 	_str = str;
@@ -100,9 +123,9 @@ StringID::StringID(const char(&str)[N])
 }
 
 #if STRINGID_SUPPORT_STD_STRING
-explicit StringID::StringID(const std::string &str)
+StringID::StringID(const std::string &str)
 {
-	_id = 0; // TODO GENERATE ID
+	_id = STRINGID_HASH(str.c_str());
 #if STRINGID_DEBUG_ENABLED
 	_str =
 #endif
