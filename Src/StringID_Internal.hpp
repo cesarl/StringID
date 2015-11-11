@@ -3,6 +3,7 @@
 #include "StringID_Config.hpp"
 
 #include <stdint.h>
+#include <string.h>
 
 #define STRINGID_INVALID_ID 0
 
@@ -20,3 +21,7 @@ typedef uint32_t                    StringIDType;
 #include <assert.h>
 #define  STRINGID_ASSERT(EXPR) assert(EXPR)
 #endif
+
+#ifndef STRINGID_UNUSED
+#define STRINGID_UNUSED(v)((void*)(&v))
+#endif  //!STRINGID_UNUSED   

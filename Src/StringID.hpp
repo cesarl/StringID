@@ -1,23 +1,52 @@
 #pragma once
 
-/*
-/!\ Set your configs in StringID_Config.hpp
-*/
-
 #include "StringID_Database.hpp"
+
+#if STRINGID_CPP11
+#include <utility>
+#endif
+
+typedef const char*& StrPtr;
+
+struct StringIDCharWrapper
+{
+	StringIDCharWrapper(const char* val) : val(val) {};
+	const char* val;
+};
 
 class StringID
 {
 public:
 	inline StringID();
 #if STRINGID_RT_HASH_ENABLED
-	inline StringID(const char *str);
+	explicit StringID(StringIDCharWrapper str)
+	{
+		_id = 0; // TODO GENERATE ID
+		_str = STRINGID_DB_ADD(str.val);
+	}
+
+	template <int N>
+	explicit StringID(const char(&str)[N])
+		: _str(str)
+	{
+		_str = str;
+	}
+
+	template <int N>
+	explicit StringID(char(&str)[N])
+		: _str(str)
+	{
+		STRINGID_ASSERT(false);
+		_str = str;
+	}
 #endif
-	inline StringID(const StringIDType id);
-	inline StringID(const StringID &o);
-	inline StringID(StringID &&o);
+	explicit inline StringID(const char *str, const StringIDType id);
+	explicit inline StringID(const StringIDType id);
+	StringID(const StringID &o);
 	inline StringID &operator=(const StringID &o);
+#if STRINGID_CPP11
 	inline StringID &operator=(StringID &&o);
+#endif
 	inline bool operator==(const StringID &o) const;
 	inline bool operator!=(const StringID &o) const;
 	inline bool operator<(const StringID &o) const;
@@ -39,15 +68,14 @@ StringID::StringID()
 #endif
 {}
 
-#if STRINGID_RT_HASH_ENABLED
-StringID::StringID(const char *str)
-{
-	// TODO Generate hash
+StringID::StringID(const char *str, const StringIDType id)
+	: _id(id)
 #if STRINGID_DEBUG_ENABLED
-	_str = str;
+	, _str(str)
+#else
+	STRINGID_UNUSED(str)
 #endif
-}
-#endif
+{}
 
 StringID::StringID(const StringIDType id)
 	: _id(id)
@@ -61,14 +89,9 @@ StringID::StringID(const StringID &o)
 #if STRINGID_DEBUG_ENABLED
 	, _str(o._str)
 #endif
-{}
+{
 
-StringID::StringID(StringID &&o)
-	: _id(std::move(o._id))
-#if STRINGID_DEBUG_ENABLED
-	, _str(std::move(o._str))
-#endif
-{}
+}
 
 StringID &StringID::operator=(const StringID &o)
 {
@@ -79,6 +102,7 @@ StringID &StringID::operator=(const StringID &o)
 	return *this;
 }
 
+#if STRINGID_CPP11
 StringID &StringID::operator=(StringID &&o)
 {
 	_id = std::move(o._id);
@@ -87,6 +111,7 @@ StringID &StringID::operator=(StringID &&o)
 #endif
 	return *this;
 }
+#endif
 
 bool StringID::operator==(const StringID &o) const
 {
