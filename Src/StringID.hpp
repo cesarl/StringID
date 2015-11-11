@@ -18,26 +18,28 @@ class StringID
 {
 public:
 	inline StringID();
+	inline ~StringID()
+	{
+	}
 #if STRINGID_RT_HASH_ENABLED
 	explicit StringID(StringIDCharWrapper str)
 	{
 		_id = 0; // TODO GENERATE ID
-		_str = STRINGID_DB_ADD(str.val);
+#if STRINGID_DEBUG_ENABLED
+		_str = STRINGID_DB_ADD_DYNAMIC(str.val, _id);
+#else
+		STRINGID_DB_ADD_DYNAMIC(str.val, _id);
+#endif
 	}
 
 	template <int N>
 	explicit StringID(const char(&str)[N])
-		: _str(str)
 	{
+		_id = 0; // TODO GENERATE ID
+		STRINGID_DB_ADD_LITERAL(str, _id);
+#if STRINGID_DEBUG_ENABLED
 		_str = str;
-	}
-
-	template <int N>
-	explicit StringID(char(&str)[N])
-		: _str(str)
-	{
-		STRINGID_ASSERT(false);
-		_str = str;
+#endif
 	}
 #endif
 	explicit inline StringID(const char *str, const StringIDType id);
@@ -72,10 +74,10 @@ StringID::StringID(const char *str, const StringIDType id)
 	: _id(id)
 #if STRINGID_DEBUG_ENABLED
 	, _str(str)
-#else
-	STRINGID_UNUSED(str)
 #endif
-{}
+{
+	STRINGID_UNUSED(str);
+}
 
 StringID::StringID(const StringIDType id)
 	: _id(id)

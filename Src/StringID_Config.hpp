@@ -9,13 +9,11 @@ StringIDManager config
 Full debug config example :
 STRINGID_DEBUG_ENABLED       1
 STRINGID_RT_HASH_ENABLED     1
-STRINGID_CHECK_COLLISIONS    1
 
 
 Release config example :
 STRINGID_DEBUG_ENABLED       0
 STRINGID_RT_HASH_ENABLED     1
-STRINGID_CHECK_COLLISIONS    1
 
 Retail config example :
 STRINGID_DEBUG_ENABLED       0
@@ -24,7 +22,7 @@ STRINGID_RT_HASH_ENABLED     0
 */
 
 //StringID keep a const char ptr*
-#define STRINGID_DEBUG_ENABLED      1//0
+#define STRINGID_DEBUG_ENABLED      1
 
 //StringID hash string at runtime
 #define STRINGID_RT_HASH_ENABLED    1
@@ -32,7 +30,6 @@ STRINGID_RT_HASH_ENABLED     0
 // Detect collisions at runtime
 // It'll enable database
 #if STRINGID_RT_HASH_ENABLED
-    #define STRINGID_CHECK_COLLISIONS   0
     #define STRINGID_SUPPORT_STD_STRING 0
 #endif
 
