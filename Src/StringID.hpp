@@ -22,7 +22,7 @@ static StringIDType StringIDHash64(const char *str)
 #else
 static StringIDType StringIDHash32(const char *str)
 {
-	return fnv_32a_str(str, FNV1A_32_INIT);
+	return fnv_32a_str(str, FNV1_32A_INIT);
 }
 #define STRINGID_HASH(str) StringIDHash32(str)
 #endif
