@@ -25,38 +25,12 @@ class StringID
 {
 public:
 	inline StringID();
-	inline ~StringID()
-	{
-	}
+	inline ~StringID();
 #if STRINGID_RT_HASH_ENABLED
-	explicit StringID(StringIDCharWrapper str)
-	{
-		_id = 0; // TODO GENERATE ID
-#if STRINGID_DEBUG_ENABLED
-		_str =
-#endif
-		STRINGID_DB_ADD_DYNAMIC(str.val, _id);
-	}
-
-	template <int N>
-	explicit StringID(const char(&str)[N])
-	{
-		_id = 0; // TODO GENERATE ID
-		STRINGID_DB_ADD_LITERAL(str, _id);
-#if STRINGID_DEBUG_ENABLED
-		_str = str;
-#endif
-	}
-
+	explicit StringID(StringIDCharWrapper str);
+	template <int N> explicit StringID(const char(&str)[N]);
 #if STRINGID_SUPPORT_STD_STRING
-	explicit StringID(const std::string &str)
-	{
-		_id = 0; // TODO GENERATE ID
-#if STRINGID_DEBUG_ENABLED
-		_str =
-#endif
-		STRINGID_DB_ADD_DYNAMIC(str.c_str(), _id);
-	}
+	explicit StringID(const std::string &str);
 #endif
 #endif
 	explicit inline StringID(const char *str, const StringIDType id);
@@ -80,11 +54,16 @@ private:
 #endif
 };
 
+#ifdef STRINGID_IMPL
+
 StringID::StringID()
 	: _id(STRINGID_INVALID_ID)
 #if STRINGID_DEBUG_ENABLED
 	, _str(nullptr)
 #endif
+{}
+
+StringID::~StringID()
 {}
 
 StringID::StringID(const char *str, const StringIDType id)
@@ -95,6 +74,39 @@ StringID::StringID(const char *str, const StringIDType id)
 {
 	STRINGID_UNUSED(str);
 }
+////
+#if STRINGID_RT_HASH_ENABLED
+StringID::StringID(StringIDCharWrapper str)
+{
+	_id = 0; // TODO GENERATE ID
+#if STRINGID_DEBUG_ENABLED
+	_str =
+#endif
+		STRINGID_DB_ADD_DYNAMIC(str.val, _id);
+}
+
+template <int N>
+StringID::StringID(const char(&str)[N])
+{
+	_id = 0; // TODO GENERATE ID
+	STRINGID_DB_ADD_LITERAL(str, _id);
+#if STRINGID_DEBUG_ENABLED
+	_str = str;
+#endif
+}
+
+#if STRINGID_SUPPORT_STD_STRING
+explicit StringID::StringID(const std::string &str)
+{
+	_id = 0; // TODO GENERATE ID
+#if STRINGID_DEBUG_ENABLED
+	_str =
+#endif
+		STRINGID_DB_ADD_DYNAMIC(str.c_str(), _id);
+}
+#endif
+#endif
+////
 
 StringID::StringID(const StringIDType id)
 	: _id(id)
@@ -166,3 +178,5 @@ bool StringID::valid() const
 {
 	return _id != STRINGID_INVALID_ID;
 }
+
+#endif

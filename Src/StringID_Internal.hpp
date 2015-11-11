@@ -28,3 +28,8 @@ typedef uint32_t                    StringIDType;
 #if STRINGID_RT_HASH_ENABLED
 #define STRINGID_DATABASE 1
 #endif
+
+#ifndef STRINGID_COLLISION
+#include <cstdio>
+#define STRINGID_COLLISION(STR1, STR2, ID) printf("StringID : Collision id %i between \"%s\" and \"%s\"", ID, STR1, STR2)
+#endif

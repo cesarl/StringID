@@ -4,30 +4,52 @@
 
 #if STRINGID_DATABASE
 
+#include <map>
+
 class StringID_Database
 {
 public:
-	static void Init();
-	const char *addLiteralString(const char *str, StringIDType id) { return nullptr; }
-	const char *addDynamicString(const char *str, StringIDType id) { return nullptr; }
-	const char *getString(StringIDType id);
-	static StringID_Database *Instance() { static StringID_Database staticInstance; return &staticInstance; }
+	const char *addLiteralString(const char *str, StringIDType id);
+	const char *addDynamicString(const char *str, StringIDType id);
+	const char *getString(StringIDType id) { return nullptr; }
 private:
+	std::map<StringIDType, const char *> _map;
 };
 #endif
 
+
+#ifdef STRINGID_IMPL
 #if STRINGID_DATABASE
-    #define STRINGID_DB_INIT() StringID_Database::Init();
-    #define STRINGID_DB_ADD_DYNAMIC(str, id) StringID_Database::Instance()->addLiteralString(str, id)
-    #define STRINGID_DB_ADD_LITERAL(str, id) StringID_Database::Instance()->addDynamicString(str, id)
-    #define STRINGID_DB_GET_STR(id) StringID_Database::Instance()->getString(id)
+
+StringID_Database StringIDDB;
+
+#if STRINGID_DATABASE
+    #define STRINGID_DB_ADD_DYNAMIC(str, id) StringIDDB.addLiteralString(str, id)
+    #define STRINGID_DB_ADD_LITERAL(str, id) StringIDDB.addDynamicString(str, id)
+    #define STRINGID_DB_GET_STR(id) StringIDDB.getString(id)
 #else //ELSE
-    #define STRINGID_DB_INIT() false
     #define STRINGID_DB_GET_STR(id) STRINGID_ASSERT(false)
 #endif
 
-#if STRINGID_DATABASE
 
-// TODO allocate in Database
+const char *StringID_Database::addLiteralString(const char *str, StringIDType id)
+{
+	return str;
+}
 
+const char *StringID_Database::addDynamicString(const char *str, StringIDType id)
+{
+	auto find = _map.find(id);
+	if (find != std::end(_map))
+	{
+		if (strcmp(str, find->second))
+		{
+			STRINGID_COLLISION(str, find->second, id);
+		}
+	}
+	return nullptr;
+}
+
+
+#endif
 #endif

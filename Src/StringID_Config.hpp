@@ -44,3 +44,5 @@ STRINGID_RT_HASH_ENABLED     0
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
 //#define STRINGID_API __declspec( dllexport )
 //#define STRINGID_API __declspec( dllimport )
+
+//#define STRINGID_COLLISION(STR1, STR2, ID)
