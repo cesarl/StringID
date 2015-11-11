@@ -9,96 +9,22 @@
 class StringID
 {
 public:
-	inline StringID()
-		: _id(STRINGID_INVALID_ID)
-		#if STRINGID_DEBUG_ENABLED
-		, _str(nullptr)
-		#endif
-	{}
-
+	inline StringID();
 #if STRINGID_RT_HASH_ENABLED
-	inline StringID(const char *str)
-	{
-	// TODO Generate hash
-#if STRINGID_DEBUG_ENABLED
-		_str = str;
+	inline StringID(const char *str);
 #endif
-	}
-#endif
-
-	inline StringID(const StringIDType id)
-		: _id(id)
-#if STRINGID_DEBUG_ENABLED
-		, _str(nullptr)
-#endif
-	{}
-
-	inline StringID(const StringID &o)
-		: _id(o._id)
-#if STRINGID_DEBUG_ENABLED
-		, _str(o._str)
-#endif
-	{}
-
-	inline StringID(StringID &&o)
-		: _id(std::move(o._id))
-#if STRINGID_DEBUG_ENABLED
-		, _str(std::move(o._str))
-#endif
-	{}
-
-	inline StringID &operator=(const StringID &o)
-		: _id(o._id)
-#if STRINGID_DEBUG_ENABLED
-		, _str(o._str)
-#endif
-	{
-		return *this;
-	}
-
-	inline StringID &operator=(StringID &&o)
-		: _id(std::move(o._id))
-#if STRINGID_DEBUG_ENABLED
-		, _str(std::move(o._str))
-#endif
-	{
-		return *this;
-	}
-
-	inline bool operator==(const StringID &o) const
-	{
-		return _id == o._id;
-	}
-
-	inline bool operator!=(const StringID &o) const
-	{
-		return _id != o._id;
-	}
-
-	inline bool operator<(const StringID &o) const
-	{
-		return _id < o._id;
-	}
-
-	inline bool operator<=(const StringID &o) const
-	{
-		return _id <= o._id;
-	}
-
-	inline bool operator>(const StringID &o) const
-	{
-		return _id > o._id;
-	}
-
-	inline bool operator>=(const StringID &o) const
-	{
-		return _id >= o._id;
-	}
-
-	bool valid() const
-	{
-		return _id != STRINGID_INVALID_ID;
-	}
+	inline StringID(const StringIDType id);
+	inline StringID(const StringID &o);
+	inline StringID(StringID &&o);
+	inline StringID &operator=(const StringID &o);
+	inline StringID &operator=(StringID &&o);
+	inline bool operator==(const StringID &o) const;
+	inline bool operator!=(const StringID &o) const;
+	inline bool operator<(const StringID &o) const;
+	inline bool operator<=(const StringID &o) const;
+	inline bool operator>(const StringID &o) const;
+	inline bool operator>=(const StringID &o) const;
+	bool valid() const;
 private:
 	StringIDType _id;
 #if STRINGID_DEBUG_ENABLED
@@ -144,28 +70,21 @@ StringID::StringID(StringID &&o)
 #endif
 {}
 
-StringID::StringID(const StringID &o)
-	: _id(o._id)
-#if STRINGID_DEBUG_ENABLED
-	, _str(o._str)
-#endif
-{}
-
 StringID &StringID::operator=(const StringID &o)
-	: _id(o._id)
-#if STRINGID_DEBUG_ENABLED
-	, _str(o._str)
-#endif
 {
+	_id = o._id;
+#if STRINGID_DEBUG_ENABLED
+	_str = o._str;
+#endif
 	return *this;
 }
 
 StringID &StringID::operator=(StringID &&o)
-	: _id(std::move(o._id))
-#if STRINGID_DEBUG_ENABLED
-	, _str(std::move(o._str))
-#endif
 {
+	_id = std::move(o._id);
+#if STRINGID_DEBUG_ENABLED
+	_str = std::move(o._str);
+#endif
 	return *this;
 }
 
