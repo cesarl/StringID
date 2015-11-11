@@ -6,10 +6,17 @@
 #include <utility>
 #endif
 
+#if STRINGID_SUPPORT_STD_STRING
+#include <xstring>
+#endif
+
 typedef const char*& StrPtr;
 
 struct StringIDCharWrapper
 {
+#if STRINGID_SUPPORT_STD_STRING
+	explicit
+#endif
 	StringIDCharWrapper(const char* val) : val(val) {};
 	const char* val;
 };
@@ -26,10 +33,9 @@ public:
 	{
 		_id = 0; // TODO GENERATE ID
 #if STRINGID_DEBUG_ENABLED
-		_str = STRINGID_DB_ADD_DYNAMIC(str.val, _id);
-#else
-		STRINGID_DB_ADD_DYNAMIC(str.val, _id);
+		_str =
 #endif
+		STRINGID_DB_ADD_DYNAMIC(str.val, _id);
 	}
 
 	template <int N>
@@ -41,6 +47,17 @@ public:
 		_str = str;
 #endif
 	}
+
+#if STRINGID_SUPPORT_STD_STRING
+	explicit StringID(const std::string &str)
+	{
+		_id = 0; // TODO GENERATE ID
+#if STRINGID_DEBUG_ENABLED
+		_str =
+#endif
+		STRINGID_DB_ADD_DYNAMIC(str.c_str(), _id);
+	}
+#endif
 #endif
 	explicit inline StringID(const char *str, const StringIDType id);
 	explicit inline StringID(const StringIDType id);

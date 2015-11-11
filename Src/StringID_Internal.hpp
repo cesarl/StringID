@@ -3,7 +3,6 @@
 #include "StringID_Config.hpp"
 
 #include <stdint.h>
-#include <string.h>
 
 #define STRINGID_INVALID_ID 0
 
