@@ -25,3 +25,15 @@ typedef uint32_t                    StringIDType;
 #ifndef STRINGID_UNUSED
 #define STRINGID_UNUSED(v)((void*)(&v))
 #endif  //!STRINGID_UNUSED   
+
+#if STRINGID_DEBUG_ENABLED || STRINGID_CHECK_COLLISIONS
+#define STRINGID_COPY_DYNAMIC_STRING 1
+#endif
+
+#if STRINGID_CHECK_COLLISIONS && !STRINGID_RT_HASH_ENABLED
+#error
+#endif
+
+#if STRINGID_CHECK_COLLISIONS
+#define STRINGID_DATABASE 1
+#endif
