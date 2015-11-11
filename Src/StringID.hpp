@@ -10,6 +10,10 @@
 #include <xstring>
 #endif
 
+#if STRINGID_RT_HASH_ENABLED
+#include "fnv.h"
+#endif
+
 typedef const char*& StrPtr;
 
 struct StringIDCharWrapper
