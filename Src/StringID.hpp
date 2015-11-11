@@ -4,15 +4,7 @@
 /!\ Set your configs in StringID_Config.hpp
 */
 
-#include "StringID_Config.hpp"
-
-#define STRINGID_INVALID_ID 0
-
-#if STRINGID_64
-typedef uint64_t                    StringIDType;
-#else
-typedef uint32_t                    StringIDType;
-#endif
+#include "StringID_Database.hpp"
 
 class StringID
 {
@@ -52,13 +44,6 @@ public:
 		: _id(std::move(o._id))
 #if STRINGID_DEBUG_ENABLED
 		, _str(std::move(o._str))
-#endif
-	{}
-
-	inline StringID(const StringID &o)
-		: _id(o._id)
-#if STRINGID_DEBUG_ENABLED
-		, _str(o._str)
 #endif
 	{}
 

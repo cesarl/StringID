@@ -1,7 +1,6 @@
-#include <iostream>
+#include "../Src/StringID.hpp"
 
 int main(int argc, const char **argv)
 {
-	std::cout << "Foo\n";
 	return 0;
 }
