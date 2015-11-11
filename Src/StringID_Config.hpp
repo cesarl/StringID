@@ -22,7 +22,7 @@ STRINGID_RT_HASH_ENABLED     0
 */
 
 //StringID keep a const char ptr*
-#define STRINGID_DEBUG_ENABLED      1
+#define STRINGID_DEBUG_ENABLED      0
 
 //StringID hash string at runtime
 #define STRINGID_RT_HASH_ENABLED    1

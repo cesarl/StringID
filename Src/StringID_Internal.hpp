@@ -31,5 +31,5 @@ typedef uint32_t                    StringIDType;
 
 #ifndef STRINGID_COLLISION
 #include <cstdio>
-#define STRINGID_COLLISION(STR1, STR2, ID) printf("StringID : Collision id %i between \"%s\" and \"%s\"", ID, STR1, STR2)
+#define STRINGID_COLLISION(STR1, STR2, ID) printf("StringID : Collision id %u between \"%s\" and \"%s\"", ID, STR1, STR2)
 #endif

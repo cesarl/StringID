@@ -14,23 +14,15 @@
 #include "fnv.h"
 
 #if STRINGID_64
-static StringIDType __lastStringIDHash = FNV1A_64_INIT;
-#else
-static StringIDType __lastStringIDHash = FNV1A_32_INIT;
-#endif
-
-#if STRINGID_64
 static StringIDType StringIDHash64(const char *str)
 {
-	__lastStringIDHash = fnv_64a_str(str, __lastStringIDHash);
-	return __lastStringIDHash;
+	return fnv_64a_str(str, FNV1A_64_INIT);
 }
 #define STRINGID_HASH(str) StringIDHash64(str)
 #else
 static StringIDType StringIDHash32(const char *str)
 {
-	__lastStringIDHash = fnv_32a_str(str, __lastStringIDHash);
-	return __lastStringIDHash;
+	return fnv_32a_str(str, FNV1A_32_INIT);
 }
 #define STRINGID_HASH(str) StringIDHash32(str)
 #endif
@@ -116,10 +108,10 @@ template <int N>
 StringID::StringID(const char(&str)[N])
 {
 	_id = STRINGID_HASH(str);
-	STRINGID_DB_ADD_LITERAL(str, _id);
 #if STRINGID_DEBUG_ENABLED
-	_str = str;
+	_str = 
 #endif
+	STRINGID_DB_ADD_LITERAL(str, _id);
 }
 
 #if STRINGID_SUPPORT_STD_STRING

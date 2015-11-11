@@ -43,7 +43,7 @@ const char *StringID_Database::addDynamicString(const char *str, StringIDType id
 	auto find = _map.find(id);
 	if (find != std::end(_map))
 	{
-		if (strcmp(str, find->second))
+		if (strcmp(str, find->second) != 0)
 		{
 			STRINGID_COLLISION(str, find->second, id);
 		}
