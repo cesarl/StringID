@@ -4,7 +4,39 @@
 
 #if STRINGID_DATABASE
 
-#include <map>
+#include STRINGID_DB_MAP_INCLUDE
+
+#pragma warning(push)
+#pragma warning(disable:4265)
+#include <mutex> // to remove for not CPP11
+#pragma warning(pop)
+
+typedef STRINGID_DB_MAP<StringIDType, const char*> StringIdMapType;
+
+class StringID_DBMap : public StringIdMapType
+{
+public:
+	const char *findStringID(StringIDType id) const
+	{
+		std::lock_guard<std::mutex> lock(_mutex);
+		StringID_DBMap::const_iterator found = find(id);
+		if (found == end())
+		{
+			return STRINGID_NULL;
+		}
+		return found->second;
+	}
+
+	void insertStringID(const char *str, StringIDType id)
+	{
+		std::lock_guard<std::mutex> lock(_mutex);
+		STRINGID_ASSERT(find(id) == end() && "ID already exists.");
+		insert(std::make_pair(id, str));
+	}
+private:
+	// todo -> to pass out of cpp11, platform specific
+	mutable std::mutex _mutex;
+};
 
 class StringID_Database
 {
@@ -13,7 +45,7 @@ public:
 	const char *addDynamicString(const char *str, StringIDType id);
 	const char *getString(StringIDType id) { return STRINGID_NULL; }
 private:
-	std::map<StringIDType, const char *> _map;
+	StringID_DBMap _map;
 };
 #endif
 
@@ -40,18 +72,18 @@ const char *StringID_Database::addLiteralString(const char *str, StringIDType id
 
 const char *StringID_Database::addDynamicString(const char *str, StringIDType id)
 {
-	auto find = _map.find(id);
-	if (find != std::end(_map))
+	const char *find = _map.findStringID(id);
+	if (find != STRINGID_NULL)
 	{
-		if (strcmp(str, find->second) != 0)
+		if (strcmp(str, find) != 0)
 		{
-			STRINGID_COLLISION(str, find->second, id);
+			STRINGID_COLLISION(str, find, id);
 		}
-		return find->second;
+		return find;
 	}
 	char *copy = (char*)malloc(sizeof(char) * strlen(str));
 	strcpy(copy, str);
-	_map.insert(std::make_pair(id, copy));
+	_map.insertStringID(copy, id);
 	return copy;
 }
 

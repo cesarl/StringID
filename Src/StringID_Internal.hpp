@@ -35,6 +35,14 @@
 #define STRINGID_CPP11              1
 #endif
 
+#ifndef STRINGID_DB_MAP_INCLUDE
+#define STRINGID_DB_MAP_INCLUDE     <map>
+#endif
+
+#ifndef STRINGID_DB_MAP
+#define STRINGID_DB_MAP             std::map
+#endif
+
 ///////////////////////////////////
 
 #define STRINGID_INVALID_ID 0

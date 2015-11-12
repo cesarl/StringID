@@ -44,3 +44,6 @@ STRINGID_RT_HASH_ENABLED     0
 //#define STRINGID_API __declspec( dllimport )
 
 //#define STRINGID_COLLISION(STR1, STR2, ID)
+
+//#define STRINGID_DB_MAP_INCLUDE     <unordered_map>
+//#define STRINGID_DB_MAP             std::unordered_map
