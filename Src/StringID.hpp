@@ -78,7 +78,7 @@ private:
 StringID::StringID()
 	: _id(STRINGID_INVALID_ID)
 #if STRINGID_DEBUG_ENABLED
-	, _str(nullptr)
+	, _str(STRINGID_NULL)
 #endif
 {}
 
@@ -130,7 +130,7 @@ StringID::StringID(const std::string &str)
 StringID::StringID(const StringIDType id)
 	: _id(id)
 #if STRINGID_DEBUG_ENABLED
-	, _str(nullptr)
+	, _str(STRINGID_NULL)
 #endif
 {}
 

@@ -11,7 +11,7 @@ class StringID_Database
 public:
 	const char *addLiteralString(const char *str, StringIDType id);
 	const char *addDynamicString(const char *str, StringIDType id);
-	const char *getString(StringIDType id) { return nullptr; }
+	const char *getString(StringIDType id) { return STRINGID_NULL; }
 private:
 	std::map<StringIDType, const char *> _map;
 };

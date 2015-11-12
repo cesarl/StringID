@@ -22,21 +22,19 @@ STRINGID_RT_HASH_ENABLED     0
 */
 
 //StringID keep a const char ptr*
-#define STRINGID_DEBUG_ENABLED      1
+//#define STRINGID_DEBUG_ENABLED      1
 
 //StringID hash string at runtime
-#define STRINGID_RT_HASH_ENABLED    1
+//#define STRINGID_RT_HASH_ENABLED    1
 
-// Detect collisions at runtime
-// It'll enable database
-#if STRINGID_RT_HASH_ENABLED
-    #define STRINGID_SUPPORT_STD_STRING 1
-#endif
+//StringID handle std::string
+//#define STRINGID_SUPPORT_STD_STRING 1
 
 //If 0, it'll be 32
-#define STRINGID_64                 1
+//#define STRINGID_64               0
 
-#define STRINGID_CPP11              1
+// Disable CPP11 features
+//#define STRINGID_CPP11            0
 
 //---- Define assertion handler. Defaults to calling assert().
 //#define STRINGID_ASSERT(_EXPR)  MyAssert(_EXPR)
