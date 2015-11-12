@@ -3,12 +3,10 @@
 class Application
 {
 public:
-	Application(int argc, const char **argv);
-	void run();
+	Application(int argc, char *argv[]);
 	~Application();
 
-
-
+	void run();
 private:
 	Application(const Application &) = delete;
 	Application(Application &&)      = delete;
