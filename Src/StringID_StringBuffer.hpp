@@ -67,8 +67,8 @@ private:
 StringID_LFChunkList::StringID_LFChunkList()
 	: _nextPtrPadding(offsetof(StringID_Chunk, next))
 {
-	STRINGID_ASSERT(nextPtrPadding != 0);
-	STRINGID_ASSERT(nextPtrPadding % 8 == 0);
+	STRINGID_ASSERT(_nextPtrPadding != 0);
+	STRINGID_ASSERT(_nextPtrPadding % 8 == 0);
 	_datas.head = STRINGID_NULL;
 	_datas.size = 0;
 }

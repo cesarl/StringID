@@ -75,7 +75,7 @@ Compiler( 'Compiler-x64' )
                      + ' /IGNORE:4001' ; don't complain about linking libs only
 
   // Optimizations
-  .CompilerDebugOptimizations   = ' /MDd /Od /RTC1 /GS /Oy- /GR-' //analyze
+  .CompilerDebugOptimizations   = ' /MD /Od /RTC1 /GS /Oy- /GR- ' //analyze
   .CompilerReleaseOptimizations = ' /MD /Ox /Oy /Oi /GS- /GF /GL /Gy /Gw /GR- ' //analyze
   .LibrarianDebugOptimizations  = ' '
   .LibrarianReleaseOptimizations  = ' /LTCG'
