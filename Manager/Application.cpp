@@ -1,8 +1,6 @@
 #include "Application.hpp"
 
-#include <string>
 #include <iostream>
-#include <vector>
 
 static const char* g_help =
 "-help                     Display this help and do nothing\n"
@@ -20,22 +18,20 @@ static const char* g_help =
 "-undo                     Used in association with -project will undo last generation\n"
 "-summary                  Display a detailed summary\n";
 
-Application::Application(int argc, char *argv[])
-{
-	std::string _projectName;
-	bool        _guiEnabled = false;
-	std::vector<std::string> _sources;
-	std::string _destination;
-	std::vector<std::string> _excludedFolders;
-	std::vector<std::string> _excludedSources;
-	std::vector<std::string> _extensions;
-	bool _clean = false;
-	bool _showCommands = false;
-	bool _verbose = false;
-	bool _saveforundo = false;
-	bool _undo = false;
-	bool _displaySummary = false;
+Application::Application()
+	:
+	_projectName("StringIDProj"),
+	_guiEnabled(false),
+	_destination(""),
+	_clean(false),
+	_verbose(false),
+	_saveforundo(false),
+	_undo(false),
+	_displaySummary(false)
+{}
 
+bool Application::init(int argc, char *argv[])
+{
 	for (int i = 1; i < argc; ++i)
 	{
 		std::string arg = argv[i];
@@ -56,6 +52,8 @@ Application::Application(int argc, char *argv[])
 				if (projectPathIndex >= argc)
 				{
 					//ERROR
+					std::cerr << "Project path missing\n";
+					return false;
 				}
 				_projectName = argv[projectPathIndex];
 				++i;
@@ -71,6 +69,8 @@ Application::Application(int argc, char *argv[])
 				int sourcesIndex = i + 1;
 				if (sourcesIndex >= argc)
 				{
+					std::cerr << "Sources missing\n";
+					return false;
 					//ERROR
 				}
 				
@@ -87,6 +87,8 @@ Application::Application(int argc, char *argv[])
 				}
 				if (_sources.empty())
 				{
+					std::cerr << "Sources missing\n";
+					return false;
 					//ERROR
 				}
 				i = sourcesIndex - 1;
@@ -97,11 +99,15 @@ Application::Application(int argc, char *argv[])
 				int destIndex = i + 1;
 				if (destIndex >= argc)
 				{
+					std::cerr << "Destination missing\n";
+					return false;
 					//ERROR
 				}
 				arg = argv[destIndex];
 				if (arg.empty() || arg[0] == '-')
 				{
+					std::cerr << "Destination missing\n";
+					return false;
 					//ERROR
 				}
 				++i;
@@ -112,6 +118,8 @@ Application::Application(int argc, char *argv[])
 				int excludedFoldersIndex = i + 1;
 				if (excludedFoldersIndex >= argc)
 				{
+					std::cerr << "Excluded folders missing\n";
+					return false;
 					//ERROR
 				}
 
@@ -128,6 +136,8 @@ Application::Application(int argc, char *argv[])
 				}
 				if (_excludedFolders.empty())
 				{
+					std::cerr << "Excluded folders missing\n";
+					return false;
 					//ERROR
 				}
 				i = excludedFoldersIndex - 1;
@@ -138,6 +148,8 @@ Application::Application(int argc, char *argv[])
 				int excludedSourcesIndex = i + 1;
 				if (excludedSourcesIndex >= argc)
 				{
+					std::cerr << "Excluded sources missing\n";
+					return false;
 					//ERROR
 				}
 
@@ -154,6 +166,8 @@ Application::Application(int argc, char *argv[])
 				}
 				if (_excludedSources.empty())
 				{
+					std::cerr << "Excluded sources missing\n";
+					return false;
 					//ERROR
 				}
 				i = excludedSourcesIndex - 1;
@@ -164,6 +178,8 @@ Application::Application(int argc, char *argv[])
 				int extIndex = i + 1;
 				if (extIndex >= argc)
 				{
+					std::cerr << "Extensions missing\n";
+					return false;
 					//ERROR
 				}
 
@@ -180,6 +196,8 @@ Application::Application(int argc, char *argv[])
 				}
 				if (_extensions.empty())
 				{
+					std::cerr << "Extensions missing\n";
+					return false;
 					//ERROR
 				}
 				i = extIndex - 1;
@@ -213,7 +231,20 @@ Application::Application(int argc, char *argv[])
 		}
 	}
 
-
+	if (_extensions.empty())
+	{
+		_extensions.push_back("h");
+		_extensions.push_back("cpp");
+		_extensions.push_back("hpp");
+		_extensions.push_back("inl");
+	}
+	if (_sources.empty())
+	{
+		std::cerr << "Sources missing\n";
+		return false;
+		//ERROR
+	}
+	return true;
 }
 
 Application::~Application()
@@ -221,4 +252,8 @@ Application::~Application()
 
 void Application::run()
 {
+	if (_guiEnabled)
+	{
+		//_initGui();
+	}
 }
