@@ -30,6 +30,9 @@ STRINGID_RT_HASH_ENABLED     0
 //StringID handle std::string
 //#define STRINGID_SUPPORT_STD_STRING 1
 
+//StringID check for collision
+//#define STRINGID_CHECK_COLLISION    1
+
 //If 0, it'll be 32
 //#define STRINGID_64               0
 

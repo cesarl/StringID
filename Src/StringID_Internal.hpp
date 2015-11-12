@@ -27,8 +27,12 @@
 #define STRINGID_SUPPORT_STD_STRING 0
 #endif
 
+#ifndef STRINGID_CHECK_COLLISION
+#define STRINGID_CHECK_COLLISION    0
+#endif
+
 #ifndef STRINGID_64
-#define STRINGID_64 1
+#define STRINGID_64                 1
 #endif  //!STRINGID_64
 
 #ifndef STRINGID_CPP11
@@ -70,7 +74,7 @@ typedef uint32_t                    StringIDType;
 #define STRINGID_UNUSED(v)((void*)(&v))
 #endif  //!STRINGID_UNUSED   
 
-#if STRINGID_RT_HASH_ENABLED
+#if STRINGID_RT_HASH_ENABLED && STRINGID_CHECK_COLLISION
 #define STRINGID_DATABASE 1
 #endif
 
