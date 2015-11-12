@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StringID_Config.hpp"
+#include "StringID_User.hpp"
 
 #include <stdint.h>
 
