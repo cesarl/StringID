@@ -47,3 +47,5 @@ STRINGID_RT_HASH_ENABLED     0
 
 //#define STRINGID_DB_MAP_INCLUDE     <unordered_map>
 //#define STRINGID_DB_MAP             std::unordered_map
+
+//#define STRINGID_BUFFER_CHUNK_SIZE  Name your size ( default : 1024 )

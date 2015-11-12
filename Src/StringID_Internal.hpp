@@ -43,6 +43,10 @@
 #define STRINGID_DB_MAP             std::map
 #endif
 
+#ifndef STRINGID_BUFFER_CHUNK_SIZE
+#define STRINGID_BUFFER_CHUNK_SIZE  1024 * 1024
+#endif
+
 ///////////////////////////////////
 
 #define STRINGID_INVALID_ID 0
