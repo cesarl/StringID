@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "File.hpp"
+
 static const char* g_help =
 "-help                     Display this help and do nothing\n"
 "-project                  Name of the project (default=\"StringIDProj\"\n"
@@ -256,4 +258,8 @@ void Application::run()
 	{
 		//_initGui();
 	}
+
+
+	std::vector<FileInfo> infos;
+	SearchFiles(std::string("../"), NULL, infos);
 }
