@@ -79,7 +79,7 @@ bool Application::init(int argc, char *argv[])
 				std::string source = argv[sourcesIndex];
 				while (source.empty() == false && source[0] != '-')
 				{
-					_sources.push_back(source);
+					_sources.push_back(CleanPath(MakePathAbsolute(source)) + "/");
 					++sourcesIndex;
 					source = "";
 					if (sourcesIndex < argc)
@@ -128,7 +128,7 @@ bool Application::init(int argc, char *argv[])
 				std::string source = argv[excludedFoldersIndex];
 				while (source.empty() == false && source[0] != '-')
 				{
-					_excludedFolders.push_back(source);
+					_excludedFolders.push_back(CleanPath(MakePathAbsolute(source)));
 					++excludedFoldersIndex;
 					source = "";
 					if (excludedFoldersIndex < argc)
@@ -158,7 +158,7 @@ bool Application::init(int argc, char *argv[])
 				std::string source = argv[excludedSourcesIndex];
 				while (source.empty() == false && source[0] != '-')
 				{
-					_excludedSources.push_back(source);
+					_excludedSources.push_back(CleanPath(MakePathAbsolute(source)));
 					++excludedSourcesIndex;
 					source = "";
 					if (excludedSourcesIndex < argc)
@@ -246,6 +246,9 @@ bool Application::init(int argc, char *argv[])
 		return false;
 		//ERROR
 	}
+
+	_currentDirectory = GetCurrentDirectory();
+
 	return true;
 }
 
@@ -259,7 +262,13 @@ void Application::run()
 		//_initGui();
 	}
 
-
 	std::vector<FileInfo> infos;
-	SearchFiles(std::string("../"), NULL, infos);
+	FileFilter filter;
+	filter._extensions = _extensions;
+	filter._excludedPath = _excludedSources;
+	filter._excludedDir = _excludedFolders;
+	for (auto &source : _sources)
+	{
+		SearchFiles(source, &filter, infos);
+	}
 }

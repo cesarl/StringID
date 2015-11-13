@@ -1,15 +1,80 @@
 #pragma once
 
+#include <algorithm>
 #include <stdint.h>
 #include <windows.h>
 
-struct FileFilter
+static const char *GetCurrentDirectory(void)
 {
-	std::vector<std::string> _excludedPath;
-	std::vector<std::string> _excludedDir;
-	std::vector<std::string> _extensions;
-	uint32_t                 _minimumWriteTime = 0;
-};
+	static char buf[1024];
+	static wchar_t wbuf[1024];
+	_wgetcwd(wbuf, sizeof(wbuf) / sizeof(wchar_t));
+	wbuf[sizeof(wbuf) / sizeof(wchar_t) - 1] = '\0';
+	WideCharToMultiByte(CP_UTF8, 0, wbuf, -1, buf, sizeof(buf), nullptr, nullptr);
+	if (buf[0]) buf[0] = toupper(buf[0]);
+	buf[sizeof(buf) - 1] = '\0';
+	for (char *s = buf; *s != '\0'; s++)
+	{
+		if (*s == '\\')
+		{
+			*s = '/';
+		}
+	}
+	std::strcat(buf, "/");
+	return buf;
+}
+
+static std::string CleanPath(const std::string &path)
+{
+	auto r = path;
+	std::replace(r.begin(), r.end(), '\\', '/');
+	return r;
+}
+
+static std::string GetExtension(const std::string &path)
+{
+	std::string::size_type		pos;
+	pos = path.find_last_of(".");
+	if (pos != std::string::npos)
+		return path.substr(pos + 1, std::string::npos);
+	else
+		return "";
+}
+
+static std::string GetName(const std::string &path)
+{
+	auto copy = path;
+	std::string::size_type		pos;
+	pos = copy.find_last_of("/");
+	if (pos != std::string::npos)
+		return copy.substr(pos + 1, std::string::npos);
+	else
+		return path;
+}
+
+static std::string DirectPath(const std::string &path)
+{
+	auto copy = path;
+	std::string::size_type pos;
+	pos = copy.find_last_of("/../");
+	while (pos != std::string::npos)
+	{
+
+		pos = copy.find_last_of("/../");
+	}
+	if (pos != std::string::npos)
+		return copy.substr(pos + 1, std::string::npos);
+
+}
+
+static std::string MakePathAbsolute(const std::string &path)
+{
+	std::string value = path, out(MAX_PATH, '\0');
+	DWORD length = GetFullPathName(value.c_str(), MAX_PATH, &out[0], NULL);
+	if (length == 0)
+		return "";
+	return out.substr(0, length);
+}
 
 struct FileInfo
 {
@@ -19,8 +84,42 @@ struct FileInfo
 	uint32_t    _size;
 };
 
+struct FileFilter
+{
+	std::vector<std::string> _excludedPath;
+	std::vector<std::string> _excludedDir;
+	std::vector<std::string> _extensions;
+	uint32_t                 _minimumWriteTime = 0;
+
+	bool filePass(const FileInfo &info) const
+	{
+		if (info._lastWriteTime <= _minimumWriteTime)
+			return false;
+		if (info._name.size() == 0)
+			return false;
+		auto extension = GetExtension(info._name);
+		if (extension.size() == 0 && _extensions.size())
+			return false;
+		if (extension.size() && _extensions.size())
+		{
+			bool extensionFound = false;
+			for (auto &e : _extensions)
+			{
+				if (e == extension)
+				{
+					extensionFound = true;
+					break;
+				}
+			}
+			if (!extensionFound)
+				return false;
+		}
+		return true;
+	}
+};
+
 static void SearchFiles(
-	std::string &path,
+	std::string path,
 	const FileFilter *filter,
 	std::vector<FileInfo> &results)
 {
@@ -93,15 +192,15 @@ static void SearchFiles(
 		path += data.cFileName;
 
 		FileInfo info;
-		info._name = path;
+		info._name = CleanPath(path);
 		info._attributes = data.dwFileAttributes;
 		info._lastWriteTime = (uint64_t)data.ftLastWriteTime.dwLowDateTime | ((uint64_t)data.ftLastWriteTime.dwHighDateTime << 32);
 		info._size = (uint64_t)data.nFileSizeLow | ((uint64_t)data.nFileSizeHigh << 32);
 
-		//if (filter && filter->pass(info))
-		//{
-		results.push_back(std::move(info));
-		//}
+		if (filter && filter->filePass(info))
+		{
+			results.push_back(std::move(info));
+		}
 	} while (FindNextFile(find, &data) != 0);
 
 	FindClose(find);

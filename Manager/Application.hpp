@@ -25,6 +25,8 @@ private:
 	bool                      _undo;
 	bool                      _displaySummary;
 
+	std::string               _currentDirectory;
+
 
 	Application(const Application &) = delete;
 	Application(Application &&)      = delete;
