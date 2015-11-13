@@ -12,6 +12,8 @@ public:
 	bool init(int argc, char *argv[]);
 	void run();
 private:
+	void treatFile(const std::string &filepath);
+
 	std::string               _projectName;
 	bool                      _guiEnabled;
 	std::vector<std::string>  _sources;

@@ -1,6 +1,12 @@
 #include "Application.hpp"
 
+#include "../src/StringID.hpp"
+
 #include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include <regex>
 
 #include "File.hpp"
 
@@ -255,6 +261,51 @@ bool Application::init(int argc, char *argv[])
 Application::~Application()
 {}
 
+/*
+Regexp :
+
+StringID("String") :
+(\\s+|\\t|\\n|\\r)StringID\s*[(]{1}\s*["]{1}.+["]{1}\s*[)]
+
+StringID("String", 0x123) :
+(\\s+|\\t|\\n|\\r)StringID\s*[(]{1}\s*["]{1}.+["]{1}\s*[,]{1}\s*(0x\d+|\d+)\s*[)]{1}
+
+StringID(0x123) :
+(\\s+|\\t|\\n|\\r)StringID\s*[(]{1}\s*(0x\d+|\d+)\s*[)]{1}
+
+For test :
+StringID("StringA")
+StringID( "StringB" )
+StringID ("StringC")
+StringID  ("StringD")
+StringID  (  "StringE")
+StringID(  "  StringF "  )
+  StringID   (     "StringG"    )
+TotoStringID   (     "StringH"    )
+  TotoStringID   (     "StringI"    )
+*/
+
+void Application::treatFile(const std::string &filepath)
+{
+		std::ifstream file(filepath.c_str());
+		std::string line;
+		std::size_t counter = 0;
+		std::smatch match;
+		while (std::getline(file, line))
+		{
+			std::istringstream iss(line);
+			std::regex regStringOnly("(\\s+|\\t|\\n|\\r|\\b)StringID\\s*[(]{1}\\s*[\"]{1}.+[\"]{1}\\s*[)]");
+			if (std::regex_search(line, match, regStringOnly))
+			{
+				for (std::size_t i = 0; i < match.size(); ++i)
+				{
+					std::cout << match[i] << " in : " << line << std::endl;
+				}
+			}
+			//StringID stid(line.c_str());
+		}
+}
+
 void Application::run()
 {
 	if (_guiEnabled)
@@ -267,8 +318,13 @@ void Application::run()
 	filter._extensions = _extensions;
 	filter._excludedPath = _excludedSources;
 	filter._excludedDir = _excludedFolders;
+	filter._minimumWriteTime = 0;
 	for (auto &source : _sources)
 	{
-		SearchFiles(source, &filter, infos);
+		SearchFiles(/*"D:\Epic Games/"*/ /*source*/ "../", &filter, infos);
+	}
+	for (auto &s : infos)
+	{
+		treatFile(s._name);
 	}
 }
