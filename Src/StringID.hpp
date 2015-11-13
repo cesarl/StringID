@@ -14,17 +14,9 @@
 #include "fnv.h"
 
 #if STRINGID_64
-static StringIDType StringIDHash64(const char *str)
-{
-	return fnv_64a_str(str, FNV1A_64_INIT);
-}
-#define STRINGID_HASH(str) StringIDHash64(str)
+#define STRINGID_HASH(str) fnv_64a_str(str, FNV1A_64_INIT)
 #else
-static StringIDType StringIDHash32(const char *str)
-{
-	return fnv_32a_str(str, FNV1_32A_INIT);
-}
-#define STRINGID_HASH(str) StringIDHash32(str)
+#define STRINGID_HASH(str) fnv_32a_str(str, FNV1_32A_INIT)
 #endif
 
 #endif
@@ -44,7 +36,7 @@ class StringID
 {
 public:
 	inline StringID();
-	inline ~StringID();
+	inline ~StringID(){};
 #if STRINGID_RT_HASH_ENABLED
 	explicit StringID(StringIDCharWrapper str);
 	template <int N> explicit StringID(const char(&str)[N]);
@@ -80,9 +72,6 @@ StringID::StringID()
 #if STRINGID_DEBUG_ENABLED
 	, _str(STRINGID_NULL)
 #endif
-{}
-
-StringID::~StringID()
 {}
 
 StringID::StringID(const char *str, const StringIDType id)
