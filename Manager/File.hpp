@@ -78,10 +78,11 @@ static std::string MakePathAbsolute(const std::string &path)
 
 struct FileInfo
 {
-	std::string _name;
-	uint32_t    _attributes;
-	uint32_t    _lastWriteTime;
-	uint32_t    _size;
+	std::string absPath;
+	std::string relPath;
+	uint32_t    attributes;
+	uint32_t    lastWriteTime;
+	uint32_t    size;
 };
 
 struct FileFilter
@@ -93,11 +94,11 @@ struct FileFilter
 
 	bool filePass(const FileInfo &info) const
 	{
-		if (info._lastWriteTime <= _minimumWriteTime)
+		if (info.lastWriteTime <= _minimumWriteTime)
 			return false;
-		if (info._name.size() == 0)
+		if (info.absPath.size() == 0)
 			return false;
-		auto extension = GetExtension(info._name);
+		auto extension = GetExtension(info.absPath);
 		if (extension.size() == 0 && _extensions.size())
 			return false;
 		if (extension.size() && _extensions.size())
@@ -192,10 +193,10 @@ static void SearchFiles(
 		path += data.cFileName;
 
 		FileInfo info;
-		info._name = CleanPath(path);
-		info._attributes = data.dwFileAttributes;
-		info._lastWriteTime = (uint64_t)data.ftLastWriteTime.dwLowDateTime | ((uint64_t)data.ftLastWriteTime.dwHighDateTime << 32);
-		info._size = (uint64_t)data.nFileSizeLow | ((uint64_t)data.nFileSizeHigh << 32);
+		info.absPath = CleanPath(path);
+		info.attributes = data.dwFileAttributes;
+		info.lastWriteTime = (uint64_t)data.ftLastWriteTime.dwLowDateTime | ((uint64_t)data.ftLastWriteTime.dwHighDateTime << 32);
+		info.size = (uint64_t)data.nFileSizeLow | ((uint64_t)data.nFileSizeHigh << 32);
 
 		if (filter && filter->filePass(info))
 		{
