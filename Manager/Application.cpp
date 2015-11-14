@@ -36,7 +36,8 @@ Application::Application()
 	_verbose(false),
 	_saveforundo(false),
 	_undo(false),
-	_displaySummary(false)
+	_displaySummary(false),
+	_inPlace(false)
 {}
 
 bool Application::init(int argc, char *argv[])
@@ -119,6 +120,7 @@ bool Application::init(int argc, char *argv[])
 					return false;
 					//ERROR
 				}
+				_destination = CleanPath(MakePathAbsolute(arg));
 				++i;
 				continue;
 			}
@@ -254,6 +256,11 @@ bool Application::init(int argc, char *argv[])
 		//ERROR
 	}
 
+	if (_destination.empty())
+	{
+		_inPlace = true;
+	}
+
 	_currentDirectory = GetCurrentDirectory();
 
 	return true;
@@ -299,9 +306,12 @@ std::string IntToHex(T i)
 	return stream.str();
 }
 
-void Application::treatFile(const std::string &filepath)
+void Application::treatFile(const FileInfo &fileInfo)
 {
-	std::fstream file(filepath.c_str());
+	std::ifstream file(fileInfo.absPath.c_str());
+
+	std::ofstream output(std::string(_destination + fileInfo.absPath + ".sid").c_str());
+
 	std::string line;
 	std::size_t counter = 0;
 	
@@ -324,6 +334,7 @@ void Application::treatFile(const std::string &filepath)
 			replacer += IntToHex(StringID(str).getId());
 			replacer += "$3";
 			line = std::regex_replace(line, regStringOnly, replacer, fonly);
+			output << line << std::endl;
 			std::cout << line << std::endl;
 		}
 
@@ -343,7 +354,12 @@ void Application::treatFile(const std::string &filepath)
 			replacer += IntToHex(sid.getId());
 			replacer += "$4";
 			line = std::regex_replace(line, regStringOnly, replacer, fonly);
+			output << line << std::endl;
 			std::cout << line << std::endl;
+		}
+		else
+		{
+			output << line << std::endl;
 		}
 	}
 }
@@ -363,10 +379,17 @@ void Application::run()
 	filter._minimumWriteTime = 0;
 	for (auto &source : _sources)
 	{
-		SearchFiles(/*"D:\Epic Games/"*/ /*source*/ "../Tests/", &filter, infos);
+		SearchFiles(/*"D:\Epic Games/"*/ source /*"../Tests/"*/, &filter, infos);
+		
+		// we set relative path
+		for (auto &res : infos)
+		{
+			res.relPath = res.absPath;
+			res.relPath.erase(0, source.size());
+		}
 	}
 	for (auto &s : infos)
 	{
-		treatFile(s._name);
+		treatFile(s);
 	}
 }

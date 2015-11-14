@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+struct FileInfo;
+
 class Application
 {
 public:
@@ -12,7 +14,7 @@ public:
 	bool init(int argc, char *argv[]);
 	void run();
 private:
-	void treatFile(const std::string &filepath);
+	void treatFile(const FileInfo &filepath);
 
 	std::string               _projectName;
 	bool                      _guiEnabled;
@@ -26,6 +28,7 @@ private:
 	bool                      _saveforundo;
 	bool                      _undo;
 	bool                      _displaySummary;
+	bool                      _inPlace;
 
 	std::string               _currentDirectory;
 
