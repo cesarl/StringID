@@ -28,37 +28,45 @@ struct StringIDCharWrapper
 #if STRINGID_SUPPORT_STD_STRING
 	explicit
 #endif
-	StringIDCharWrapper(const char* val) : val(val) {};
+	StringIDCharWrapper(const char* val);
 	const char* val;
 };
 
 class StringID
 {
 public:
-	inline StringID();
-	inline ~StringID(){};
+	StringID();
+	~StringID();
+	StringIDType getId() const;
 #if STRINGID_RT_HASH_ENABLED
 	explicit StringID(StringIDCharWrapper str);
-	template <int N> explicit StringID(const char(&str)[N]);
+	template <int N> StringID(const char(&str)[N])
+	{
+		internalConstructLiteral(str);
+	}
 #if STRINGID_SUPPORT_STD_STRING
 	explicit StringID(const std::string &str);
 #endif
 #endif
-	explicit inline StringID(const char *str, const StringIDType id);
-	explicit inline StringID(const StringIDType id);
+	explicit StringID(const char *str, const StringIDType id);
+	explicit StringID(const StringIDType id);
 	StringID(const StringID &o);
-	inline StringID &operator=(const StringID &o);
+	StringID &operator=(const StringID &o);
 #if STRINGID_CPP11
-	inline StringID &operator=(StringID &&o);
+	StringID &operator=(StringID &&o);
 #endif
-	inline bool operator==(const StringID &o) const;
-	inline bool operator!=(const StringID &o) const;
-	inline bool operator<(const StringID &o) const;
-	inline bool operator<=(const StringID &o) const;
-	inline bool operator>(const StringID &o) const;
-	inline bool operator>=(const StringID &o) const;
+	bool operator==(const StringID &o) const;
+	bool operator!=(const StringID &o) const;
+	bool operator<(const StringID &o) const;
+	bool operator<=(const StringID &o) const;
+	bool operator>(const StringID &o) const;
+	bool operator>=(const StringID &o) const;
 	bool valid() const;
 private:
+#if STRINGID_RT_HASH_ENABLED
+	void internalConstructLiteral(const char *str);
+#endif
+
 	StringIDType _id;
 #if STRINGID_DEBUG_ENABLED
 	const char  *_str;
@@ -67,12 +75,33 @@ private:
 
 #ifdef STRINGID_IMPL
 
+StringIDCharWrapper::StringIDCharWrapper(const char* val)
+	: val(val)
+{};
+
 StringID::StringID()
 	: _id(STRINGID_INVALID_ID)
 #if STRINGID_DEBUG_ENABLED
 	, _str(STRINGID_NULL)
 #endif
 {}
+
+StringID::~StringID()
+{}
+
+StringIDType StringID::getId() const
+{
+	return _id;
+}
+
+void StringID::internalConstructLiteral(const char *str)
+{
+	_id = STRINGID_HASH(str);
+#if STRINGID_DEBUG_ENABLED
+	_str =
+#endif
+		STRINGID_DB_ADD_LITERAL(str, _id);
+}
 
 StringID::StringID(const char *str, const StringIDType id)
 	: _id(id)
@@ -93,15 +122,15 @@ StringID::StringID(StringIDCharWrapper str)
 		STRINGID_DB_ADD_DYNAMIC(str.val, _id);
 }
 
-template <int N>
-StringID::StringID(const char(&str)[N])
-{
-	_id = STRINGID_HASH(str);
-#if STRINGID_DEBUG_ENABLED
-	_str = 
-#endif
-	STRINGID_DB_ADD_LITERAL(str, _id);
-}
+//template <int N>
+//StringID::StringID(const char(&str)[N])
+//{
+//	_id = STRINGID_HASH(str);
+//#if STRINGID_DEBUG_ENABLED
+//	_str = 
+//#endif
+//	STRINGID_DB_ADD_LITERAL(str, _id);
+//}
 
 #if STRINGID_SUPPORT_STD_STRING
 StringID::StringID(const std::string &str)
