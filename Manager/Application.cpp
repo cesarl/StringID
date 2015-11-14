@@ -301,27 +301,51 @@ std::string IntToHex(T i)
 
 void Application::treatFile(const std::string &filepath)
 {
-		std::fstream file(filepath.c_str());
-		std::string line;
-		std::size_t counter = 0;
-		while (std::getline(file, line))
-		{
-			std::istringstream iss(line);
-			
-			std::regex regStringOnly("(\\bStringID\\s*[(]{1}\\s*[\"]{1}(.+)[\"]{1}\\s*)([)]{1})");
-			std::smatch match;
-			auto fonly = std::regex_constants::format_no_copy;
+	std::fstream file(filepath.c_str());
+	std::string line;
+	std::size_t counter = 0;
+	
+	auto fonly = std::regex_constants::format_no_copy;
+	std::regex regStringOnly   ("(\\bStringID\\s*[(]{1}\\s*[\"]{1}(.+)[\"]{1}\\s*)([)]{1})");
+	std::regex regStringAndHash("(\\bStringID\\s*[(]{1}\\s*[\"]{1}(.+)[\"]{1}\\s*[,]{1}\\s*(0x[\\d|a-f]+|[\\d|a-f]+))\\s*([)]{1})");
+	std::smatch match;
+	
+	while (std::getline(file, line))
+	{
+		std::istringstream iss(line);
 
-			if (std::regex_search(line, match, regStringOnly))
-			{
-				std::string replacer = "$1, ";
-				replacer += IntToHex(StringID(std::string(match[2]).c_str()).getId());
-				replacer += "$3";
-				line = std::regex_replace(line, regStringOnly, replacer, fonly);
-				std::cout << line << std::endl;
-			}
-			//StringID stid(line.c_str());
+		// We search for StringID("Literal");
+		// And generate ID for it
+
+		if (std::regex_search(line, match, regStringOnly))
+		{
+			std::string replacer = "$1, ";
+			auto &str = match[2].str();
+			replacer += IntToHex(StringID(str).getId());
+			replacer += "$3";
+			line = std::regex_replace(line, regStringOnly, replacer, fonly);
+			std::cout << line << std::endl;
 		}
+
+		// We search for already hashed strings like StringID("Literal", 0x123);
+		// We check if the hash is up to date, if not we re-generate it
+		// We also register the hash if not already in db cache to check for collisions
+
+		else if (std::regex_search(line, match, regStringAndHash))
+		{
+			auto &str = match[2].str();
+			auto &h = match[3].str();
+			StringIDType id = strtoll(h.c_str(), nullptr, 16);
+			StringID sid = StringID(str);
+			if (sid.getId() == id)
+				continue;
+			std::string replacer = "$1, ";
+			replacer += IntToHex(sid.getId());
+			replacer += "$4";
+			line = std::regex_replace(line, regStringOnly, replacer, fonly);
+			std::cout << line << std::endl;
+		}
+	}
 }
 
 void Application::run()
