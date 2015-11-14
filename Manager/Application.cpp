@@ -301,7 +301,7 @@ std::string IntToHex(T i)
 {
 	std::stringstream stream;
 	stream << "0x"
-		//<< std::setfill('0') << std::setw(sizeof(T) * 2)
+		<< std::setfill('0') << std::setw(sizeof(T) * 2)
 		<< std::hex << i;
 	return stream.str();
 }
@@ -316,8 +316,21 @@ void Application::treatFile(const FileInfo &fileInfo)
 	std::size_t counter = 0;
 	
 	auto fonly = std::regex_constants::format_no_copy;
-	std::regex regStringOnly   ("(\\bStringID\\s*[(]{1}\\s*[\"]{1}(.+)[\"]{1}\\s*)([)]{1})");
-	std::regex regStringAndHash("(\\bStringID\\s*[(]{1}\\s*[\"]{1}(.+)[\"]{1}\\s*[,]{1}\\s*(0x[\\d|a-f]+|[\\d|a-f]+))\\s*([)]{1})");
+	/*
+	1 : Crap + StringID("
+	2 : str
+	3 : "
+	4 :) + crap
+	*/
+	std::regex regStringOnly   ("(.*\\bStringID\\s*[(]{1}\\s*[\"]{1})(.+)([\"]{1}\\s*)([)]{1}.*)");
+	/*
+	1 : Crap + StringID("
+	2 : str
+	3 : ",
+	4 : 0x123
+	5 : ) + crap
+	*/
+	std::regex regStringAndHash("(.*\\bStringID\\s*[(]{1}\\s*\")(.+)(\"\\s*,)\\s*(0x[\\d|a-f]+|[\\d|a-f]+)\\s*([)]{1}.*)");
 	std::smatch match;
 	
 	while (std::getline(file, line))
@@ -329,10 +342,10 @@ void Application::treatFile(const FileInfo &fileInfo)
 
 		if (std::regex_search(line, match, regStringOnly))
 		{
-			std::string replacer = "$1, ";
+			std::string replacer = "$1$2$3,";
 			auto &str = match[2].str();
 			replacer += IntToHex(StringID(str).getId());
-			replacer += "$3";
+			replacer += "$4";
 			line = std::regex_replace(line, regStringOnly, replacer, fonly);
 			output << line << std::endl;
 			std::cout << line << std::endl;
@@ -345,15 +358,18 @@ void Application::treatFile(const FileInfo &fileInfo)
 		else if (std::regex_search(line, match, regStringAndHash))
 		{
 			auto &str = match[2].str();
-			auto &h = match[3].str();
+			auto &h = match[4].str();
 			StringIDType id = strtoll(h.c_str(), nullptr, 16);
 			StringID sid = StringID(str);
 			if (sid.getId() == id)
+			{
+				output << line << std::endl;
 				continue;
-			std::string replacer = "$1, ";
+			}
+			std::string replacer = "$1$2$3 ";
 			replacer += IntToHex(sid.getId());
-			replacer += "$4";
-			line = std::regex_replace(line, regStringOnly, replacer, fonly);
+			replacer += "$5";
+			line = std::regex_replace(line, regStringAndHash, replacer, fonly);
 			output << line << std::endl;
 			std::cout << line << std::endl;
 		}
