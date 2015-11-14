@@ -265,7 +265,10 @@ Application::~Application()
 Regexp :
 
 StringID("String") :
-(\\s+|\\t|\\n|\\r)StringID\s*[(]{1}\s*["]{1}.+["]{1}\s*[)]
+[\\s+|\\t|\\n|\\r]StringID\s*[(]{1}\s*["]{1}.+["]{1}\s*[)]
+
+\bStringID\s*[(]{1}\s*["]{1}.+["]{1}\s*[)]{1}
+\\bStringID\\s*[(]{1}\\s*[\"]{1}.+[\"]{1}\\s*[)]{1}
 
 StringID("String", 0x123) :
 (\\s+|\\t|\\n|\\r)StringID\s*[(]{1}\s*["]{1}.+["]{1}\s*[,]{1}\s*(0x\d+|\d+)\s*[)]{1}
@@ -290,17 +293,21 @@ void Application::treatFile(const std::string &filepath)
 		std::ifstream file(filepath.c_str());
 		std::string line;
 		std::size_t counter = 0;
-		std::smatch match;
 		while (std::getline(file, line))
 		{
 			std::istringstream iss(line);
-			std::regex regStringOnly("(\\s+|\\t|\\n|\\r|\\b)StringID\\s*[(]{1}\\s*[\"]{1}.+[\"]{1}\\s*[)]");
+			
+			std::regex regStringOnly("(\\bStringID\\s*[(]{1}\\s*[\"]{1}(.+)[\"]{1}\\s*)([)]{1})");
+			std::smatch match;
+			auto fonly = std::regex_constants::format_no_copy;
+
 			if (std::regex_search(line, match, regStringOnly))
 			{
-				for (std::size_t i = 0; i < match.size(); ++i)
-				{
-					std::cout << match[i] << " in : " << line << std::endl;
-				}
+				std::string replacer = "$1, ";
+				replacer += std::to_string(StringID(std::string(match[2]).c_str()).getId());
+				replacer += "$3";
+				line = std::regex_replace(line, regStringOnly, replacer, fonly);
+				std::cout << line << std::endl;
 			}
 			//StringID stid(line.c_str());
 		}
