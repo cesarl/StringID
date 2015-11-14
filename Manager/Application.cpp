@@ -1,7 +1,8 @@
 #include "Application.hpp"
 
-#include "../src/StringID.hpp"
+#include "StringIDImpl.hpp"
 
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -288,9 +289,19 @@ TotoStringID   (     "StringH"    )
   TotoStringID   (     "StringI"    )
 */
 
+template< typename T >
+std::string IntToHex(T i)
+{
+	std::stringstream stream;
+	stream << "0x"
+		//<< std::setfill('0') << std::setw(sizeof(T) * 2)
+		<< std::hex << i;
+	return stream.str();
+}
+
 void Application::treatFile(const std::string &filepath)
 {
-		std::ifstream file(filepath.c_str());
+		std::fstream file(filepath.c_str());
 		std::string line;
 		std::size_t counter = 0;
 		while (std::getline(file, line))
@@ -304,7 +315,7 @@ void Application::treatFile(const std::string &filepath)
 			if (std::regex_search(line, match, regStringOnly))
 			{
 				std::string replacer = "$1, ";
-				replacer += std::to_string(StringID(std::string(match[2]).c_str()).getId());
+				replacer += IntToHex(StringID(std::string(match[2]).c_str()).getId());
 				replacer += "$3";
 				line = std::regex_replace(line, regStringOnly, replacer, fonly);
 				std::cout << line << std::endl;
@@ -328,7 +339,7 @@ void Application::run()
 	filter._minimumWriteTime = 0;
 	for (auto &source : _sources)
 	{
-		SearchFiles(/*"D:\Epic Games/"*/ /*source*/ "../", &filter, infos);
+		SearchFiles(/*"D:\Epic Games/"*/ /*source*/ "../Tests/", &filter, infos);
 	}
 	for (auto &s : infos)
 	{
