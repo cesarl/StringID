@@ -199,3 +199,4 @@ FakesAssemblies/
 *.vcxproj
 *.filters
 FastBuild/report.html
+*.sid

@@ -1,14 +1,14 @@
 
 
 
-StringID("easy");
-StringID( "easy" );
-StringID ("easy");
-StringID  ("easy");
-StringID(  "easy"  );
+StringID("easy 1");
+StringID( "easy 2" );
+StringID ("easy 3");
+StringID  ("easy 4");
+StringID(  "easy XV3"  );
 
- StringID("easy");
- StringID( "easy" );
+ StringID("easy A");
+ StringID( "easy B" );
 WRONGStringID ("easy");
 WRONG_StringID("easy");
 WRONG,StringID("easy");
