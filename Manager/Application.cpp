@@ -456,14 +456,16 @@ void Application::run()
 	{
 		FileInfo file;
 		{
-			std::lock_guard<std::mutex> lock(_mutex);
+			_mutex.lock();
 			if (_queue.empty())
 			{
+				_mutex.unlock();
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				continue;
 			}
 			file = this->_queue.front();
 			this->_queue.pop();
+			_mutex.unlock();
 		}
 		this->treatFile(file);
 		_fileCounter.fetch_sub(1);
