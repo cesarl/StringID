@@ -322,59 +322,86 @@ void Application::treatFile(const FileInfo &fileInfo)
 	std::size_t counter = 0;
 	
 	/*
-	1 : Crap + StringID("
+	1 : crap
 	2 : str
-	3 : "
-	4 :) + crap
 	*/
-	std::regex regStringOnly   ("(.*\\bStringID\\s*[(]{1}\\s*[\"]{1})(.+)([\"]{1}\\s*)([)]{1}.*)");
+	std::regex regStringOnly   ("(.*?)\\bStringID\\s*[(]{1}\\s*[\"]{1}(.+?)[\"]{1}\\s*[)]{1}");
 	/*
-	1 : Crap + StringID("
+	1 : Crap
 	2 : str
-	3 : ",
-	4 : 0x123
-	5 : ) + crap
+	3 : 0x123
 	*/
-	std::regex regStringAndHash("(.*\\bStringID\\s*[(]{1}\\s*\")(.+)(\"\\s*,)\\s*(0x[\\d|a-f]+|[\\d|a-f]+)\\s*([)]{1}.*)");
-	std::smatch match;
+	std::regex regStringAndHash("(.*?)\\bStringID\\s*[(]{1}\\s*\"(.+?)\"\\s*,\\s*(0x[\\d|a-f]+|[\\d|a-f]+)\\s*[)]{1}");
+	std::match_results<std::string::const_iterator> match;
 	
 	while (std::getline(file, line))
 	{
 		std::istringstream iss(line);
 
-		// We search for StringID("Literal");
-		// And generate ID for it
 		line += "\n";
 
-		if (line.find("StringID") == std::string::npos)
+		if (line.find("StringID") != std::string::npos)
 		{
-		}
-		else if (std::regex_search(line, match, regStringOnly))
-		{
-			std::string replacer = "$1$2$3,";
-			auto &str = match[2].str();
-			replacer += IntToHex(StringID(str).getId());
-			replacer += "$4";
-			line = std::regex_replace(line, regStringOnly, replacer);
-		}
+			std::string lineCopy = line;
+			line.clear();
 
-		// We search for already hashed strings like StringID("Literal", 0x123);
-		// We check if the hash is up to date, if not we re-generate it
-		// We also register the hash if not already in db cache to check for collisions
+			auto flags = std::regex_constants::match_default | std::regex_constants::format_first_only | std::regex_constants::format_no_copy;
+			bool pass = false;
 
-		else if (std::regex_search(line, match, regStringAndHash))
-		{
-			auto &str = match[2].str();
-			auto &h = match[4].str();
-			StringIDType id = strtoll(h.c_str(), nullptr, 16);
-			StringID sid = StringID(str);
-
-			if (sid.getId() != id)
+			// We search for already hashed strings like StringID("Literal", 0x123);
+			// We check if the hash is up to date, if not we re-generate it
+			// We also register the hash if not already in db cache to check for collisions
+			while (std::regex_search(lineCopy, match, regStringAndHash, flags))
 			{
-				std::string replacer = "$1$2$3 ";
-				replacer += IntToHex(sid.getId());
-				replacer += "$5";
-				line = std::regex_replace(line, regStringAndHash, replacer);
+				auto &str = match[2].str();
+				auto &h = match[3].str();
+				StringIDType id = strtoll(h.c_str(), nullptr, 16);
+				StringID sid = StringID(str);
+
+				if (sid.getId() != id)
+				{
+					std::string replacer = "$1StringID(\"$2\", ";
+					replacer += IntToHex(sid.getId());
+					replacer += ")";
+					line += std::regex_replace(lineCopy, regStringAndHash, replacer, flags);
+					pass = true;
+				}
+				else
+				{
+					line = lineCopy;
+				}
+				lineCopy = match.suffix().str();
+			}
+			if (pass)
+			{
+				line += lineCopy;
+			}
+
+			if (!line.empty())
+				lineCopy = line;
+			line.clear();
+			pass = false;
+
+			// We search for StringID("Literal");
+			// And generate ID for it
+			while (std::regex_search(lineCopy, match, regStringOnly, flags))
+			{
+				std::string replacer = "$1StringID(\"$2\", ";
+				auto &str = match[2].str();
+				replacer += IntToHex(StringID(str).getId());
+				replacer += ")";
+				line += std::regex_replace(lineCopy, regStringOnly, replacer, flags);
+				lineCopy = match.suffix().str();
+				pass = true;
+			}
+			if (pass)
+			{
+				line += lineCopy;
+			}
+
+			if (line.empty())
+			{
+				line = lineCopy;
 			}
 		}
 		output << line;
