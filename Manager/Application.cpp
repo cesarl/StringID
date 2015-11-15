@@ -11,6 +11,10 @@
 
 #include "File.hpp"
 
+#include <stdio.h>
+#include <windows.h>
+#include <algorithm>
+
 static const char* g_help =
 "-help                     Display this help and do nothing\n"
 "-project                  Name of the project (default=\"StringIDProj\"\n"
@@ -38,7 +42,12 @@ Application::Application()
 	_undo(false),
 	_displaySummary(false),
 	_inPlace(false)
-{}
+{
+}
+
+Application::~Application()
+{
+}
 
 bool Application::init(int argc, char *argv[])
 {
@@ -266,9 +275,6 @@ bool Application::init(int argc, char *argv[])
 	return true;
 }
 
-Application::~Application()
-{}
-
 /*
 Regexp :
 
@@ -315,7 +321,6 @@ void Application::treatFile(const FileInfo &fileInfo)
 	std::string line;
 	std::size_t counter = 0;
 	
-	auto fonly = std::regex_constants::format_no_copy;
 	/*
 	1 : Crap + StringID("
 	2 : str
@@ -339,16 +344,18 @@ void Application::treatFile(const FileInfo &fileInfo)
 
 		// We search for StringID("Literal");
 		// And generate ID for it
+		line += "\n";
 
-		if (std::regex_search(line, match, regStringOnly))
+		if (line.find("StringID") == std::string::npos)
+		{
+		}
+		else if (std::regex_search(line, match, regStringOnly))
 		{
 			std::string replacer = "$1$2$3,";
 			auto &str = match[2].str();
 			replacer += IntToHex(StringID(str).getId());
 			replacer += "$4";
-			line = std::regex_replace(line, regStringOnly, replacer, fonly);
-			output << line << std::endl;
-			std::cout << line << std::endl;
+			line = std::regex_replace(line, regStringOnly, replacer);
 		}
 
 		// We search for already hashed strings like StringID("Literal", 0x123);
@@ -361,27 +368,23 @@ void Application::treatFile(const FileInfo &fileInfo)
 			auto &h = match[4].str();
 			StringIDType id = strtoll(h.c_str(), nullptr, 16);
 			StringID sid = StringID(str);
-			if (sid.getId() == id)
+
+			if (sid.getId() != id)
 			{
-				output << line << std::endl;
-				continue;
+				std::string replacer = "$1$2$3 ";
+				replacer += IntToHex(sid.getId());
+				replacer += "$5";
+				line = std::regex_replace(line, regStringAndHash, replacer);
 			}
-			std::string replacer = "$1$2$3 ";
-			replacer += IntToHex(sid.getId());
-			replacer += "$5";
-			line = std::regex_replace(line, regStringAndHash, replacer, fonly);
-			output << line << std::endl;
-			std::cout << line << std::endl;
 		}
-		else
-		{
-			output << line << std::endl;
-		}
+		output << line;
 	}
+
 }
 
 void Application::run()
 {
+
 	if (_guiEnabled)
 	{
 		//_initGui();
@@ -408,4 +411,5 @@ void Application::run()
 	{
 		treatFile(s);
 	}
+
 }
