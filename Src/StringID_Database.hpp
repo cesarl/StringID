@@ -2,7 +2,7 @@
 
 #include "StringID_Internal.hpp"
 
-#if STRINGID_CHECK_COLLISION || STRINGID_DEBUG_ENABLED
+#if STRINGID_CHECK_COLLISION || STRINGID_DEBUG_ENABLED || STRINGID_DATABASE
 #define STRINGID_COPY_STRINGS 1
 #include "StringID_StringBuffer.hpp"
 #endif

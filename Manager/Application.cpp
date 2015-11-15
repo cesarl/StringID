@@ -392,7 +392,7 @@ void Application::treatFile(const FileInfo &fileInfo)
 
 			// We search for StringID("Literal");
 			// And generate ID for it
-			//while (std::regex_search(lineCopy, match, regStringOnly, flags))
+			while (std::regex_search(lineCopy, match, regStringOnly, flags))
 			{
 				std::string replacer = "$1$2\", ";
 				auto &str = match[2].str();
