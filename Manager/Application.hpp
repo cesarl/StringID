@@ -2,8 +2,13 @@
 
 #include <string>
 #include <vector>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
 
-struct FileInfo;
+#include "File.hpp"
 
 class Application
 {
@@ -15,6 +20,7 @@ public:
 	void run();
 private:
 	void treatFile(const FileInfo &filepath);
+	bool waitAndTreatFile();
 
 	std::string               _projectName;
 	bool                      _guiEnabled;
@@ -32,6 +38,12 @@ private:
 
 	std::string               _currentDirectory;
 
+	std::vector<std::thread> _threads;
+	std::mutex               _mutex;
+	std::condition_variable  _condition;
+	std::queue<FileInfo>     _queue;
+	std::atomic_size_t       _fileCounter;
+	bool                     _exit;
 
 	Application(const Application &) = delete;
 	Application(Application &&)      = delete;

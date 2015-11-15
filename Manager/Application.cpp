@@ -47,6 +47,12 @@ Application::Application()
 
 Application::~Application()
 {
+	_exit = true;
+	_condition.notify_all();
+	for (auto it = _threads.begin(); it != _threads.end(); ++it)
+	{
+		it->join();
+	}
 }
 
 bool Application::init(int argc, char *argv[])
@@ -272,35 +278,20 @@ bool Application::init(int argc, char *argv[])
 
 	_currentDirectory = GetCurrentDirectory();
 
+	_exit = false;
+	unsigned int maxThread = std::thread::hardware_concurrency();
+	if (maxThread > 1)
+		maxThread -= 1;
+	for (unsigned int i = 0; i < maxThread; ++i)
+	{
+		_threads.emplace_back([this]() {
+			
+			while (waitAndTreatFile())
+			{ }
+		});
+	}
 	return true;
 }
-
-/*
-Regexp :
-
-StringID("String") :
-[\\s+|\\t|\\n|\\r]StringID\s*[(]{1}\s*["]{1}.+["]{1}\s*[)]
-
-\bStringID\s*[(]{1}\s*["]{1}.+["]{1}\s*[)]{1}
-\\bStringID\\s*[(]{1}\\s*[\"]{1}.+[\"]{1}\\s*[)]{1}
-
-StringID("String", 0x123) :
-(\\s+|\\t|\\n|\\r)StringID\s*[(]{1}\s*["]{1}.+["]{1}\s*[,]{1}\s*(0x\d+|\d+)\s*[)]{1}
-
-StringID(0x123) :
-(\\s+|\\t|\\n|\\r)StringID\s*[(]{1}\s*(0x\d+|\d+)\s*[)]{1}
-
-For test :
-StringID("StringA")
-StringID( "StringB" )
-StringID ("StringC")
-StringID  ("StringD")
-StringID  (  "StringE")
-StringID(  "  StringF "  )
-  StringID   (     "StringG"    )
-TotoStringID   (     "StringH"    )
-  TotoStringID   (     "StringI"    )
-*/
 
 template< typename T >
 std::string IntToHex(T i)
@@ -310,6 +301,22 @@ std::string IntToHex(T i)
 		<< std::setfill('0') << std::setw(sizeof(T) * 2)
 		<< std::hex << i;
 	return stream.str();
+}
+
+bool Application::waitAndTreatFile()
+{
+	FileInfo file;
+	{
+		std::unique_lock<std::mutex> lock(this->_mutex);
+		this->_condition.wait(lock, [this](){return this->_queue.size() || this->_exit; });
+		if (_exit && _queue.empty())
+			return false;
+		file = this->_queue.front();
+		this->_queue.pop();
+	}
+	this->treatFile(file);
+	_fileCounter.fetch_sub(1);
+	return true;
 }
 
 void Application::treatFile(const FileInfo &fileInfo)
@@ -385,7 +392,7 @@ void Application::treatFile(const FileInfo &fileInfo)
 
 			// We search for StringID("Literal");
 			// And generate ID for it
-			while (std::regex_search(lineCopy, match, regStringOnly, flags))
+			//while (std::regex_search(lineCopy, match, regStringOnly, flags))
 			{
 				std::string replacer = "$1$2\", ";
 				auto &str = match[2].str();
@@ -435,9 +442,30 @@ void Application::run()
 			res.relPath.erase(0, source.size());
 		}
 	}
-	for (auto &s : infos)
 	{
-		treatFile(s);
+		std::lock_guard<std::mutex> lock(_mutex);
+		_fileCounter = 0;
+		for (auto &s : infos)
+		{
+			_queue.emplace(s);
+			_condition.notify_all();
+			++_fileCounter;
+		}
 	}
-
+	while (_fileCounter != 0)
+	{
+		FileInfo file;
+		{
+			std::lock_guard<std::mutex> lock(_mutex);
+			if (_queue.empty())
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				continue;
+			}
+			file = this->_queue.front();
+			this->_queue.pop();
+		}
+		this->treatFile(file);
+		_fileCounter.fetch_sub(1);
+	}
 }
