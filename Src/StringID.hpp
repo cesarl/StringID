@@ -38,6 +38,7 @@ public:
 	StringID();
 	~StringID();
 	StringIDType getId() const;
+	const char *str() const;
 #if STRINGID_RT_HASH_ENABLED
 	explicit StringID(StringIDCharWrapper str);
 	template <int N> StringID(const char(&str)[N])
@@ -92,6 +93,17 @@ StringID::~StringID()
 StringIDType StringID::getId() const
 {
 	return _id;
+}
+
+const char *StringID::str() const
+{
+#if STRINGID_DEBUG_ENABLED
+	return _str;
+#elif STRINGID_DATABASE
+	return STRINGID_DB_GET_STR(_id);
+#else
+	return STRINGID_NULL;
+#endif
 }
 
 void StringID::internalConstructLiteral(const char *str)
