@@ -322,16 +322,17 @@ void Application::treatFile(const FileInfo &fileInfo)
 	std::size_t counter = 0;
 	
 	/*
-	1 : crap
+	1 : crap StringID("
 	2 : str
 	*/
-	std::regex regStringOnly   ("(.*?)\\bStringID\\s*[(]{1}\\s*[\"]{1}(.+?)[\"]{1}\\s*[)]{1}");
+	std::regex regStringOnly   ("(.*?\\bStringID\\s*[(]{1}\\s*[\"]{1})(.+?)[\"]{1}\\s*[)]{1}");
 	/*
-	1 : Crap
+	1 : Crap StringID
 	2 : str
-	3 : 0x123
+	3 : , 
+	4 : 0x123
 	*/
-	std::regex regStringAndHash("(.*?)\\bStringID\\s*[(]{1}\\s*\"(.+?)\"\\s*,\\s*(0x[\\d|a-f]+|[\\d|a-f]+)\\s*[)]{1}");
+	std::regex regStringAndHash("(.*?\\bStringID\\s*[(]{1}\\s*\")(.+?)(\"\\s*,\\s*)(0x[\\d|a-f]+|[\\d|a-f]+)\\s*[)]{1}");
 	std::match_results<std::string::const_iterator> match;
 	
 	while (std::getline(file, line))
@@ -354,13 +355,13 @@ void Application::treatFile(const FileInfo &fileInfo)
 			while (std::regex_search(lineCopy, match, regStringAndHash, flags))
 			{
 				auto &str = match[2].str();
-				auto &h = match[3].str();
+				auto &h = match[4].str();
 				StringIDType id = strtoll(h.c_str(), nullptr, 16);
 				StringID sid = StringID(str);
 
 				if (sid.getId() != id)
 				{
-					std::string replacer = "$1StringID(\"$2\", ";
+					std::string replacer = "$1$2\", ";
 					replacer += IntToHex(sid.getId());
 					replacer += ")";
 					line += std::regex_replace(lineCopy, regStringAndHash, replacer, flags);
@@ -386,7 +387,7 @@ void Application::treatFile(const FileInfo &fileInfo)
 			// And generate ID for it
 			while (std::regex_search(lineCopy, match, regStringOnly, flags))
 			{
-				std::string replacer = "$1StringID(\"$2\", ";
+				std::string replacer = "$1$2\", ";
 				auto &str = match[2].str();
 				replacer += IntToHex(StringID(str).getId());
 				replacer += ")";
