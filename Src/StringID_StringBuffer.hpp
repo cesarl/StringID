@@ -110,6 +110,7 @@ StringID_Chunk *StringID_LFChunkList::try_grow()
 	{
 		return newElement;
 	}
+	delete newElement;
 	return STRINGID_NULL;
 }
 
