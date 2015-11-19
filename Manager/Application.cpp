@@ -265,7 +265,7 @@ bool Application::init(int argc, char *argv[])
 		_extensions.push_back("hpp");
 		_extensions.push_back("inl");
 	}
-	if (_sources.empty())
+	if (_sources.empty() && _undo == false)
 	{
 		std::cerr << "Sources missing\n";
 		return false;
