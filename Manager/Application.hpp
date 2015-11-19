@@ -22,9 +22,6 @@ public:
 private:
 	struct Save
 	{
-		uint32_t    from = 0;
-		uint32_t    to = 0;
-		uint32_t    lineNumber = 0;
 		std::string path = "";
 		std::string dest = "";
 		bool modified = false;
@@ -34,14 +31,13 @@ private:
 	{
 		struct PjcSave
 		{
-			uint32_t from;
-			uint32_t to;
 			std::string path;
+			std::string buffer;
 
 			template<class Archive>
 			void serialize(Archive & archive)
 			{
-				archive(CEREAL_NVP(from), CEREAL_NVP(to), CEREAL_NVP(path));
+				archive(CEREAL_NVP(path), CEREAL_NVP(buffer));
 			}
 		};
 		std::vector<PjcSave> save;
@@ -57,7 +53,6 @@ private:
 	void searchAndReplaceInFile(const FileInfo &filepath, Save *save);
 	void treatFile(std::size_t index);
 	bool waitAndTreatFile();
-	void saveSaveBigFile();
 	void projectLoad();
 	void projectSave();
 	void undoFile(const ProjectSave::PjcSave &save);
