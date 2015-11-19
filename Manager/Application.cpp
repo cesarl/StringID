@@ -478,8 +478,10 @@ void Application::saveSaveBigFile()
 			std::string content((std::istreambuf_iterator<char>(file)),
 				(std::istreambuf_iterator<char>()));
 			from += content.size();
-			e.to = from - 1;
+			e.to = from;
+			from += 1;
 			append << content;
+			file.close();
 			DeleteFile(e.path.c_str());
 		}
 	}
