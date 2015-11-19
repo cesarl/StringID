@@ -3,11 +3,9 @@
 #include <string>
 #include <vector>
 #include <thread>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
 #include <atomic>
 
+#include "Project.hpp"
 #include "File.hpp"
 
 class Application
@@ -19,7 +17,8 @@ public:
 	bool init(int argc, char *argv[]);
 	void run();
 private:
-	void treatFile(const FileInfo &filepath);
+	void searchAndReplaceInFile(const FileInfo &filepath);
+	void treatFile(std::size_t index);
 	bool waitAndTreatFile();
 
 	std::string               _projectName;
@@ -39,11 +38,23 @@ private:
 	std::string               _currentDirectory;
 
 	std::vector<std::thread> _threads;
-	std::mutex               _mutex;
-	std::condition_variable  _condition;
-	std::queue<FileInfo>     _queue;
 	std::atomic_size_t       _fileCounter;
+	std::atomic_size_t       _treatedFileCounter;
 	bool                     _exit;
+
+	Project                  _project;
+
+	struct Save
+	{
+		uint32_t    from = 0;
+		uint32_t    to   = 0;
+		std::string path = "";
+		std::string dest = "";
+		bool modified    = false;
+	};
+
+	std::vector<Save>       _rtSaves;
+	std::vector<FileInfo>   _rtInfos;
 
 	Application(const Application &) = delete;
 	Application(Application &&)      = delete;

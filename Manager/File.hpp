@@ -119,6 +119,40 @@ struct FileFilter
 	}
 };
 
+static bool GetFileInfo(const std::string &path, FileInfo &info)
+{
+	HANDLE hFile;
+
+	hFile = CreateFile(path.data(), // file to open
+		GENERIC_READ,          // open for reading
+		FILE_SHARE_READ,       // share for reading
+		NULL,                  // default security
+		OPEN_EXISTING,         // existing file only
+		FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, // normal file
+		NULL);                 // no attr. template
+
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
+
+	BY_HANDLE_FILE_INFORMATION i;
+
+	if (!GetFileInformationByHandle(hFile, &i))
+	{
+		CloseHandle(hFile);
+		return false;
+	}
+	CloseHandle(hFile);
+
+	info.absPath = CleanPath(path);
+	info.attributes = i.dwFileAttributes;
+	info.lastWriteTime = (uint64_t)i.ftLastWriteTime.dwLowDateTime | ((uint64_t)i.ftLastWriteTime.dwHighDateTime << 32);
+	info.size = (uint64_t)i.nFileSizeLow | ((uint64_t)i.nFileSizeHigh << 32);
+
+	return true;
+}
+
 static void SearchFiles(
 	std::string path,
 	const FileFilter *filter,

@@ -48,7 +48,6 @@ Application::Application()
 Application::~Application()
 {
 	_exit = true;
-	_condition.notify_all();
 	for (auto it = _threads.begin(); it != _threads.end(); ++it)
 	{
 		it->join();
@@ -279,17 +278,7 @@ bool Application::init(int argc, char *argv[])
 	_currentDirectory = GetCurrentDirectory();
 
 	_exit = false;
-	unsigned int maxThread = std::thread::hardware_concurrency();
-	if (maxThread > 1)
-		maxThread -= 1;
-	for (unsigned int i = 0; i < maxThread; ++i)
-	{
-		_threads.emplace_back([this]() {
-			
-			while (waitAndTreatFile())
-			{ }
-		});
-	}
+
 	return true;
 }
 
@@ -305,21 +294,29 @@ std::string IntToHex(T i)
 
 bool Application::waitAndTreatFile()
 {
-	FileInfo file;
+	auto fileNumber = _rtInfos.size();
+	while (_treatedFileCounter < fileNumber)
 	{
-		std::unique_lock<std::mutex> lock(this->_mutex);
-		this->_condition.wait(lock, [this](){return this->_queue.size() || this->_exit; });
-		if (_exit && _queue.empty())
-			return false;
-		file = this->_queue.front();
-		this->_queue.pop();
+		std::size_t it = _fileCounter.fetch_add(1);
+		if (it >= fileNumber)
+			continue;
+		treatFile(it);
+		_treatedFileCounter.fetch_add(1);
 	}
-	this->treatFile(file);
-	_fileCounter.fetch_sub(1);
-	return true;
+	return false;
 }
 
-void Application::treatFile(const FileInfo &fileInfo)
+void Application::treatFile(std::size_t index)
+{
+	auto &file = _rtInfos[index];
+	if (_saveforundo)
+	{
+		//save for undo
+	}
+	searchAndReplaceInFile(file);
+}
+
+void Application::searchAndReplaceInFile(const FileInfo &fileInfo)
 {
 	std::ifstream file(fileInfo.absPath.c_str());
 
@@ -446,49 +443,63 @@ void Application::run()
 		//_initGui();
 	}
 
-	std::vector<FileInfo> infos;
-	FileFilter filter;
-	filter._extensions = _extensions;
-	filter._excludedPath = _excludedSources;
-	filter._excludedDir = _excludedFolders;
-	filter._minimumWriteTime = 0;
-	for (auto &source : _sources)
+
+	if (_undo == true)
 	{
-		SearchFiles(/*"D:\Epic Games/"*/ source /*"../Tests/"*/, &filter, infos);
-		
-		// we set relative path
-		for (auto &res : infos)
+		for (auto &e : _project.getSavedCache())
 		{
-			res.relPath = res.absPath;
-			res.relPath.erase(0, source.size());
-		}
-	}
-	{
-		std::lock_guard<std::mutex> lock(_mutex);
-		_fileCounter = 0;
-		for (auto &s : infos)
-		{
-			_queue.emplace(s);
-			_condition.notify_all();
-			++_fileCounter;
-		}
-	}
-	while (_fileCounter != 0)
-	{
-		FileInfo file;
-		{
-			_mutex.lock();
-			if (_queue.empty())
-			{
-				_mutex.unlock();
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			FileInfo info;
+			bool exist = GetFileInfo(e.path, info);
+			if (exist && info.lastWriteTime <= e.lastWriteTime)
 				continue;
-			}
-			file = this->_queue.front();
-			this->_queue.pop();
-			_mutex.unlock();
+			std::ofstream output(e.path.c_str());
+			output << e.save.data();
 		}
-		this->treatFile(file);
-		_fileCounter.fetch_sub(1);
+	}
+	else
+	{
+		FileFilter filter;
+		filter._extensions = _extensions;
+		filter._excludedPath = _excludedSources;
+		filter._excludedDir = _excludedFolders;
+		filter._minimumWriteTime = 0;
+		for (auto &source : _sources)
+		{
+			SearchFiles(/*"D:\Epic Games/"*/ source /*"../Tests/"*/, &filter, _rtInfos);
+
+			// we set relative path
+			for (auto &res : _rtInfos)
+			{
+				res.relPath = res.absPath;
+				res.relPath.erase(0, source.size());
+			}
+		}
+		{
+			_fileCounter = 0;
+			_treatedFileCounter = 0;
+			for (auto &s : _rtInfos)
+			{
+				if (_saveforundo)
+				{
+					Save save;
+					save.dest = _destination + s.absPath;
+					save.path = save.dest + ".sidtmpsave";
+					_rtSaves.push_back(save);
+				}
+			}
+		}
+		unsigned int maxThread = std::thread::hardware_concurrency();
+		if (maxThread > 1)
+			maxThread -= 1;
+		for (unsigned int i = 0; i < maxThread; ++i)
+		{
+			_threads.emplace_back([this]() {
+
+				while (waitAndTreatFile())
+				{
+				}
+			});
+		}
+		waitAndTreatFile();
 	}
 }
