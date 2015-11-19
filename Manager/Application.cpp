@@ -15,9 +15,11 @@
 #include <windows.h>
 #include <algorithm>
 
+#include <cereal/archives/json.hpp>
+
 static const char* g_help =
 "-help                     Display this help and do nothing\n"
-"-project                  Project path (default=\"./StringIDProj.sidproj\"\n"
+"-project                  Project path (default=\"./StringIDProj\"\n"
 "-gui                      Launch GUI application\n"
 "-sources                  List folders to search (=\"C:/Folder1;../Folder2\")\n"
 "-destination              Destination root folder where to copy results.\n"
@@ -33,7 +35,7 @@ static const char* g_help =
 
 Application::Application()
 	:
-	_projectName("StringIDProj"),
+	_projectName("./StringIDProj"),
 	_guiEnabled(false),
 	_destination(""),
 	_clean(false),
@@ -321,8 +323,9 @@ void Application::treatFile(std::size_t index)
 void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 {
 	std::ifstream file(fileInfo.absPath.c_str());
-
-	std::ofstream output(std::string(_destination + fileInfo.absPath + ".sid").c_str());
+	
+	std::string output;
+	output.reserve(fileInfo.size);
 
 	std::string line;
 	std::size_t counter = 0;
@@ -435,25 +438,27 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 				line = lineCopy;
 			}
 		}
-		output << line;
+		output += line;
 	}
 	if (save)
 	{
 		save->modified = modified;
 	}
+	file.close();
+	std::ofstream outputFile(std::string(_destination + fileInfo.absPath).c_str());
+	outputFile << output;
+
 }
 
 void Application::saveSaveBigFile()
 {
 	uint32_t from = 0;
 
-	//std::ofstream output(std::string("save.sidsave").c_str());
-
-	DeleteFile("save.sidsave");
-
 	HANDLE hAppend;
 	HANDLE hFile;
-	hAppend = CreateFile(TEXT("save.sidsave"),
+	std::string savePath = _projectName + ".SIDSave";
+	DeleteFile(savePath.c_str());
+	hAppend = CreateFile(savePath.c_str(),
 		FILE_APPEND_DATA,         
 		FILE_SHARE_READ,          
 		NULL,                     
@@ -507,6 +512,70 @@ void Application::saveSaveBigFile()
 	}
 }
 
+void Application::projectLoad()
+{
+	std::string projectPath = _projectName + ".SIDProj";
+	std::ifstream file(projectPath.c_str(), std::ios::binary);
+	if (file.is_open())
+	{
+		cereal::JSONInputArchive ar(file);
+		ar(_project);
+	}
+}
+
+void Application::projectSave()
+{
+	_project.filesLastWrite = GetCurrentTime();
+	_project.save.clear();
+	if (_saveforundo)
+	{
+		for (auto &s : _rtSaves)
+		{
+			if (s.modified)
+			{
+				_project.save.resize(_project.save.size() + 1);
+				auto &save = _project.save.back();
+				save.from = s.from;
+				save.to = s.to;
+				save.path = s.dest;
+			}
+		}
+	}
+
+	std::string projectPath = _projectName + ".SIDProj";
+	std::ofstream file(projectPath.c_str(), std::ios::binary);
+	if (file.is_open())
+	{
+		cereal::JSONOutputArchive ar(file);
+		ar(_project);
+	}
+}
+
+void Application::undoFile(const ProjectSave::PjcSave &save)
+{
+	std::string savePath = _projectName + ".SIDSave";
+	std::ofstream dest(save.path.c_str());
+	if (dest.is_open() == false)
+	{
+		//ERROR
+		return;
+	}
+	std::string saveFilePath = _projectName + ".SIDSave";
+	std::ifstream source(saveFilePath.c_str());
+	if (source.is_open() == false)
+	{
+		//ERROR
+		return;
+	}
+	source.seekg(save.from, source.beg);
+	std::size_t length = save.to - save.from;
+	STRINGID_ASSERT(length != 0);
+	char *buffer = new char[length];
+	source.read(buffer, length);
+	dest.write(buffer, length);
+	delete[] buffer;
+}
+
 void Application::run()
 {
 
@@ -515,17 +584,13 @@ void Application::run()
 		//_initGui();
 	}
 
+	projectLoad();
 
 	if (_undo == true)
 	{
-		for (auto &e : _project.getSavedCache())
+		for (auto &e : _project.save)
 		{
-			FileInfo info;
-			bool exist = GetFileInfo(e.path, info);
-			if (exist && info.lastWriteTime <= e.lastWriteTime)
-				continue;
-			std::ofstream output(e.path.c_str());
-			output << e.save.data();
+			undoFile(e);
 		}
 	}
 	else
@@ -537,7 +602,7 @@ void Application::run()
 		filter._minimumWriteTime = 0;
 		for (auto &source : _sources)
 		{
-			SearchFiles(/*"D:\Epic Games/"*/ source /*"../Tests/"*/, &filter, _rtInfos);
+			SearchFiles(source, &filter, _rtInfos);
 
 			// we set relative path
 			for (auto &res : _rtInfos)
@@ -578,5 +643,7 @@ void Application::run()
 		{
 			saveSaveBigFile();
 		}
+
+		projectSave();
 	}
 }
