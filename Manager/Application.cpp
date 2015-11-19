@@ -350,8 +350,6 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 
 	while (std::getline(file, line))
 	{
-		std::istringstream iss(line);
-
 		line += "\n";
 
 		bool scopeDisabledForThisLine = disabledScope;
@@ -488,7 +486,7 @@ void Application::projectSave()
 					continue;
 				}
 				save.buffer = std::string((std::istreambuf_iterator<char>(file)),
-					(std::istreambuf_iterator<char>()));;
+					(std::istreambuf_iterator<char>()));
 			}
 			DeleteFile(filePath.c_str());
 		}
