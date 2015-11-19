@@ -17,9 +17,19 @@ public:
 	bool init(int argc, char *argv[]);
 	void run();
 private:
-	void searchAndReplaceInFile(const FileInfo &filepath);
+	struct Save
+	{
+		uint32_t    from = 0;
+		uint32_t    to = 0;
+		std::string path = "";
+		std::string dest = "";
+		bool modified = false;
+	};
+
+	void searchAndReplaceInFile(const FileInfo &filepath, Save *save);
 	void treatFile(std::size_t index);
 	bool waitAndTreatFile();
+	void saveSaveBigFile();
 
 	std::string               _projectName;
 	bool                      _guiEnabled;
@@ -43,15 +53,6 @@ private:
 	bool                     _exit;
 
 	Project                  _project;
-
-	struct Save
-	{
-		uint32_t    from = 0;
-		uint32_t    to   = 0;
-		std::string path = "";
-		std::string dest = "";
-		bool modified    = false;
-	};
 
 	std::vector<Save>       _rtSaves;
 	std::vector<FileInfo>   _rtInfos;

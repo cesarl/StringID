@@ -309,14 +309,16 @@ bool Application::waitAndTreatFile()
 void Application::treatFile(std::size_t index)
 {
 	auto &file = _rtInfos[index];
+	Save *save = nullptr;
 	if (_saveforundo)
 	{
-		//save for undo
+		save = &_rtSaves[index];
+		CopyFile(save->dest.c_str(), save->path.c_str(), FALSE);
 	}
-	searchAndReplaceInFile(file);
+	searchAndReplaceInFile(file, save);
 }
 
-void Application::searchAndReplaceInFile(const FileInfo &fileInfo)
+void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 {
 	std::ifstream file(fileInfo.absPath.c_str());
 
@@ -340,7 +342,8 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo)
 	std::match_results<std::string::const_iterator> match;
 
 	bool disabledScope = false;
-	
+	bool modified = false;
+
 	while (std::getline(file, line))
 	{
 		std::istringstream iss(line);
@@ -391,6 +394,7 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo)
 					replacer += ")";
 					line += std::regex_replace(lineCopy, regStringAndHash, replacer, flags);
 					pass = true;
+					modified = true;
 				}
 				else
 				{
@@ -419,6 +423,7 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo)
 				line += std::regex_replace(lineCopy, regStringOnly, replacer, flags);
 				lineCopy = match.suffix().str();
 				pass = true;
+				modified = true;
 			}
 			if (pass)
 			{
@@ -432,7 +437,74 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo)
 		}
 		output << line;
 	}
+	if (save)
+	{
+		save->modified = modified;
+	}
+}
 
+void Application::saveSaveBigFile()
+{
+	uint32_t from = 0;
+
+	//std::ofstream output(std::string("save.sidsave").c_str());
+
+	DeleteFile("save.sidsave");
+
+	HANDLE hAppend;
+	HANDLE hFile;
+	hAppend = CreateFile(TEXT("save.sidsave"),
+		FILE_APPEND_DATA,         
+		FILE_SHARE_READ,          
+		NULL,                     
+		OPEN_ALWAYS,              
+		FILE_ATTRIBUTE_NORMAL,    
+		NULL);
+
+	if (hAppend == INVALID_HANDLE_VALUE)
+	{
+		// ERROR SAVING
+	}
+
+	BYTE   buff[4096];
+	size_t sizeOfBuff = sizeof(buff);
+	DWORD  dwBytesRead, dwBytesWritten, dwPos;
+
+	for (auto &e : _rtSaves)
+	{
+		if (e.modified)
+		{
+			hFile = CreateFile(e.path.c_str(),
+				GENERIC_READ,
+				0,
+				NULL,
+				OPEN_EXISTING,
+				FILE_ATTRIBUTE_NORMAL,
+				NULL);
+			if (hFile == INVALID_HANDLE_VALUE)
+			{
+				// ERROR OPENING
+			}
+			e.from = from;
+			while (ReadFile(hFile, buff, sizeOfBuff, &dwBytesRead, NULL)
+				&& dwBytesRead > 0)
+			{
+				dwPos = SetFilePointer(hAppend, 0, NULL, FILE_END);
+				LockFile(hAppend, dwPos, 0, dwBytesRead, 0);
+				WriteFile(hAppend, buff, dwBytesRead, &dwBytesWritten, NULL);
+				UnlockFile(hAppend, dwPos, 0, dwBytesRead, 0);
+				from += dwBytesWritten;
+			}
+			e.to = from;
+			CloseHandle(hFile);
+			DeleteFile(e.path.c_str());
+		}
+	}
+	CloseHandle(hAppend);
+	if (from == 0)
+	{
+		DeleteFile("save.sidsave");
+	}
 }
 
 void Application::run()
@@ -501,5 +573,10 @@ void Application::run()
 			});
 		}
 		waitAndTreatFile();
+
+		if (_saveforundo)
+		{
+			saveSaveBigFile();
+		}
 	}
 }
