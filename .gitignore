@@ -200,3 +200,5 @@ FakesAssemblies/
 *.filters
 FastBuild/report.html
 *.sid
+*.SIDSave
+*.SIDProj
