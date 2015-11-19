@@ -315,7 +315,8 @@ void Application::treatFile(std::size_t index)
 	if (_saveforundo)
 	{
 		save = &_rtSaves[index];
-		CopyFile(save->dest.c_str(), save->path.c_str(), FALSE);
+		auto dest = save->path + ".sidtmpsave";
+		CopyFile(save->path.c_str(), dest.c_str(), FALSE);
 	}
 	searchAndReplaceInFile(file, save);
 }
@@ -346,9 +347,11 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 
 	bool disabledScope = false;
 	bool modified = false;
+	uint32_t lineCounter = 0;
 
 	while (std::getline(file, line))
 	{
+		++lineCounter;
 		std::istringstream iss(line);
 
 		line += "\n";
@@ -443,23 +446,25 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 	if (save)
 	{
 		save->modified = modified;
+		save->lineNumber = lineCounter;
 	}
 	file.close();
-	std::ofstream outputFile(std::string(_destination + fileInfo.absPath).c_str());
+	std::ofstream outputFile(std::string(_destination + fileInfo.relPath).c_str());
 	outputFile << output;
 
 }
 
 void Application::saveSaveBigFile()
 {
-	uint32_t from = 0;
-
 	std::string savePath = _projectName + ".SIDSave";
 	DeleteFile(savePath.c_str());
-	std::ofstream append(savePath.c_str());
+	std::ofstream append(savePath.c_str(), std::ios::binary);
+	bool updated = false;
+	size_t c = 0;
 
 	if (append.is_open() == false)
 	{
+		std::cerr << "Error reading " << savePath << std::endl;
 		// ERROR
 		return;
 	}
@@ -468,25 +473,28 @@ void Application::saveSaveBigFile()
 	{
 		if (e.modified)
 		{
-			std::ifstream file(e.path.c_str(), std::ios::ate);
+			updated = true;
+			e.from = c;
+			auto filePath = e.path + ".sidtmpsave";
+			std::ifstream file(filePath, std::ios::binary);
 			if (file.is_open() == false)
 			{
+				std::cerr << "Error reading " << filePath << std::endl;
 				//ERROR
 				continue;
 			}
-			e.from = from;
-			from += file.tellg();
-			e.to = from;
-			from += 1;
-			file.seekg(0, file.beg);
 			append << file.rdbuf();
+			std::cout << filePath << " : " << c << std::endl;
+			c += size_t(append.tellp());
+			e.to = c;
+			c += 1;
 			file.close();
-			DeleteFile(e.path.c_str());
+			DeleteFile(filePath.c_str());
 		}
 	}
-	if (from == 0)
+	if (updated == false)
 	{
-		DeleteFile("save.sidsave");
+		DeleteFile(savePath.c_str());
 	}
 }
 
@@ -532,14 +540,14 @@ void Application::projectSave()
 void Application::undoFile(const ProjectSave::PjcSave &save)
 {
 	std::string savePath = _projectName + ".SIDSave";
-	std::ofstream dest(save.path.c_str(), std::ios::trunc);
+	std::ofstream dest(save.path.c_str(), std::ios::trunc | std::ios::binary);
 	if (dest.is_open() == false)
 	{
 		//ERROR
 		return;
 	}
 	std::string saveFilePath = _projectName + ".SIDSave";
-	std::ifstream source(saveFilePath.c_str());
+	std::ifstream source(saveFilePath.c_str(), std::ios::binary);
 	if (source.is_open() == false)
 	{
 		//ERROR
@@ -597,8 +605,8 @@ void Application::run()
 				if (_saveforundo)
 				{
 					Save save;
-					save.dest = _destination + s.absPath;
-					save.path = save.dest + ".sidtmpsave";
+					save.dest = _destination + s.relPath;
+					save.path = s.absPath;
 					_rtSaves.push_back(save);
 				}
 			}

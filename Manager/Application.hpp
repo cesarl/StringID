@@ -24,6 +24,7 @@ private:
 	{
 		uint32_t    from = 0;
 		uint32_t    to = 0;
+		uint32_t    lineNumber = 0;
 		std::string path = "";
 		std::string dest = "";
 		bool modified = false;
