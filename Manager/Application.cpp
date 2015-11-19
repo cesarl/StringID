@@ -468,19 +468,18 @@ void Application::saveSaveBigFile()
 	{
 		if (e.modified)
 		{
-			std::ifstream file(e.path.c_str());
+			std::ifstream file(e.path.c_str(), std::ios::ate);
 			if (file.is_open() == false)
 			{
 				//ERROR
 				continue;
 			}
 			e.from = from;
-			std::string content((std::istreambuf_iterator<char>(file)),
-				(std::istreambuf_iterator<char>()));
-			from += content.size();
+			from += file.tellg();
 			e.to = from;
 			from += 1;
-			append << content;
+			file.seekg(0, file.beg);
+			append << file.rdbuf();
 			file.close();
 			DeleteFile(e.path.c_str());
 		}
