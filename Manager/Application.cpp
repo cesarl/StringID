@@ -454,58 +454,35 @@ void Application::saveSaveBigFile()
 {
 	uint32_t from = 0;
 
-	HANDLE hAppend;
-	HANDLE hFile;
 	std::string savePath = _projectName + ".SIDSave";
 	DeleteFile(savePath.c_str());
-	hAppend = CreateFile(savePath.c_str(),
-		FILE_APPEND_DATA,         
-		FILE_SHARE_READ,          
-		NULL,                     
-		OPEN_ALWAYS,              
-		FILE_ATTRIBUTE_NORMAL,    
-		NULL);
+	std::ofstream append(savePath.c_str());
 
-	if (hAppend == INVALID_HANDLE_VALUE)
+	if (append.is_open() == false)
 	{
-		// ERROR SAVING
+		// ERROR
+		return;
 	}
-
-	BYTE   buff[4096];
-	size_t sizeOfBuff = sizeof(buff);
-	DWORD  dwBytesRead, dwBytesWritten, dwPos;
 
 	for (auto &e : _rtSaves)
 	{
 		if (e.modified)
 		{
-			hFile = CreateFile(e.path.c_str(),
-				GENERIC_READ,
-				0,
-				NULL,
-				OPEN_EXISTING,
-				FILE_ATTRIBUTE_NORMAL,
-				NULL);
-			if (hFile == INVALID_HANDLE_VALUE)
+			std::ifstream file(e.path.c_str());
+			if (file.is_open() == false)
 			{
-				// ERROR OPENING
+				//ERROR
+				continue;
 			}
 			e.from = from;
-			while (ReadFile(hFile, buff, sizeOfBuff, &dwBytesRead, NULL)
-				&& dwBytesRead > 0)
-			{
-				dwPos = SetFilePointer(hAppend, 0, NULL, FILE_END);
-				LockFile(hAppend, dwPos, 0, dwBytesRead, 0);
-				WriteFile(hAppend, buff, dwBytesRead, &dwBytesWritten, NULL);
-				UnlockFile(hAppend, dwPos, 0, dwBytesRead, 0);
-				from += dwBytesRead;
-			}
-			e.to = from;
-			CloseHandle(hFile);
+			std::string content((std::istreambuf_iterator<char>(file)),
+				(std::istreambuf_iterator<char>()));
+			from += content.size();
+			e.to = from - 1;
+			append << content;
 			DeleteFile(e.path.c_str());
 		}
 	}
-	CloseHandle(hAppend);
 	if (from == 0)
 	{
 		DeleteFile("save.sidsave");
