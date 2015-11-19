@@ -498,7 +498,7 @@ void Application::saveSaveBigFile()
 				LockFile(hAppend, dwPos, 0, dwBytesRead, 0);
 				WriteFile(hAppend, buff, dwBytesRead, &dwBytesWritten, NULL);
 				UnlockFile(hAppend, dwPos, 0, dwBytesRead, 0);
-				from += dwBytesWritten;
+				from += dwBytesRead;
 			}
 			e.to = from;
 			CloseHandle(hFile);
@@ -554,7 +554,7 @@ void Application::projectSave()
 void Application::undoFile(const ProjectSave::PjcSave &save)
 {
 	std::string savePath = _projectName + ".SIDSave";
-	std::ofstream dest(save.path.c_str());
+	std::ofstream dest(save.path.c_str(), std::ios::trunc);
 	if (dest.is_open() == false)
 	{
 		//ERROR
