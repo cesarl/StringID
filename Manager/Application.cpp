@@ -466,7 +466,12 @@ void Application::projectLoad()
 
 void Application::projectSave()
 {
-	_project.filesLastWrite = GetCurrentTime();
+	SYSTEMTIME time;
+	GetSystemTime(&time);
+	FILETIME   ftime;
+	SystemTimeToFileTime(&time, &ftime);
+
+	_project.filesLastWrite = (uint64_t)ftime.dwLowDateTime | ((uint64_t)ftime.dwHighDateTime << 32);
 	_project.save.clear();
 	if (_saveforundo)
 	{
@@ -537,7 +542,7 @@ void Application::run()
 		filter._extensions = _extensions;
 		filter._excludedPath = _excludedSources;
 		filter._excludedDir = _excludedFolders;
-		filter._minimumWriteTime = 0;
+		filter._minimumWriteTime = _project.filesLastWrite;
 		for (auto &source : _sources)
 		{
 			SearchFiles(source, &filter, _rtInfos);
@@ -549,6 +554,7 @@ void Application::run()
 				res.relPath.erase(0, source.size());
 			}
 		}
+		if (_rtInfos.size() > 0)
 		{
 			_fileCounter = 0;
 			_treatedFileCounter = 0;
@@ -562,21 +568,24 @@ void Application::run()
 					_rtSaves.push_back(save);
 				}
 			}
+			unsigned int maxThread = std::thread::hardware_concurrency();
+			if (maxThread > 1)
+				maxThread -= 1;
+			for (unsigned int i = 0; i < maxThread; ++i)
+			{
+				_threads.emplace_back([this]() {
+
+					while (waitAndTreatFile())
+					{
+					}
+				});
+			}
+			waitAndTreatFile();
+			projectSave();
 		}
-		unsigned int maxThread = std::thread::hardware_concurrency();
-		if (maxThread > 1)
-			maxThread -= 1;
-		for (unsigned int i = 0; i < maxThread; ++i)
+		else
 		{
-			_threads.emplace_back([this]() {
-
-				while (waitAndTreatFile())
-				{
-				}
-			});
+			std::cout << "Noting to do !" << std::endl;
 		}
-		waitAndTreatFile();
-
-		projectSave();
 	}
 }
