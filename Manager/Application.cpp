@@ -17,7 +17,7 @@
 
 static const char* g_help =
 "-help                     Display this help and do nothing\n"
-"-project                  Name of the project (default=\"StringIDProj\"\n"
+"-project                  Project path (default=\"./StringIDProj.sidproj\"\n"
 "-gui                      Launch GUI application\n"
 "-sources                  List folders to search (=\"C:/Folder1;../Folder2\")\n"
 "-destination              Destination root folder where to copy results.\n"
@@ -27,7 +27,7 @@ static const char* g_help =
 "-extensions               List extensions to parse (default=\".cpp;.h;.hh;.inl\")\n"
 "-clean                    Will not use cache infos, will re-parse all files\n"
 "-verbose                  Show detailed diagnostic information for debugging\n"
-"-saveForUndo              Will keep a save of modified files in project's file\n"
+"-save                     Will keep a save of modified files in project's file\n"
 "-undo                     Used in association with -project will undo last generation\n"
 "-summary                  Display a detailed summary\n";
 
@@ -239,7 +239,7 @@ bool Application::init(int argc, char *argv[])
 				_verbose = true;
 				continue;
 			}
-			if (arg == "-saveForUndo")
+			if (arg == "-save")
 			{
 				_saveforundo = true;
 				continue;
@@ -341,6 +341,8 @@ void Application::treatFile(const FileInfo &fileInfo)
 	*/
 	std::regex regStringAndHash("(.*?\\bStringID\\s*[(]{1}\\s*\")(.+?)(\"\\s*,\\s*)(0x[\\d|a-f]+|[\\d|a-f]+)\\s*[)]{1}");
 	std::match_results<std::string::const_iterator> match;
+
+	bool disabledScope = false;
 	
 	while (std::getline(file, line))
 	{
@@ -348,7 +350,26 @@ void Application::treatFile(const FileInfo &fileInfo)
 
 		line += "\n";
 
-		if (line.find("StringID") != std::string::npos)
+		bool scopeDisabledForThisLine = disabledScope;
+
+		if (disabledScope == true)
+		{
+			if (line.find("STRINGID_MANAGER_ENABLED") != std::string::npos)
+			{
+				disabledScope = false;
+			}
+		}
+
+		if (disabledScope == false)
+		{
+			if (line.find("STRINGID_MANAGER_DISABLED") != std::string::npos)
+			{
+				disabledScope = true;
+			}
+		}
+
+		if (scopeDisabledForThisLine == false
+			&& line.find("StringID") != std::string::npos)
 		{
 			std::string lineCopy = line;
 			line.clear();

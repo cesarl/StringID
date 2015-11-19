@@ -21,6 +21,9 @@
 
 #endif
 
+#define STRINGID_MANAGER_DISABLED()()
+#define STRINGID_MANAGER_ENABLED()()
+
 typedef const char*& StrPtr;
 
 struct StringIDCharWrapper
