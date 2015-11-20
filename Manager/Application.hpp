@@ -25,6 +25,7 @@ private:
 		std::string path = "";
 		std::string dest = "";
 		bool modified = false;
+		std::string buffer;
 	};
 
 	struct ProjectSave
@@ -41,7 +42,7 @@ private:
 			}
 		};
 		std::vector<PjcSave> save;
-		uint32_t filesLastWrite;
+		uint32_t filesLastWrite = 0;
 
 		template<class Archive>
 		void serialize(Archive & archive)

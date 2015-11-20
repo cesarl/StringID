@@ -315,8 +315,6 @@ void Application::treatFile(std::size_t index)
 	if (_saveforundo)
 	{
 		save = &_rtSaves[index];
-		auto dest = save->path + ".sidtmpsave";
-		CopyFile(save->path.c_str(), dest.c_str(), FALSE);
 	}
 	searchAndReplaceInFile(file, save);
 }
@@ -439,11 +437,19 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 		}
 		output += line;
 	}
+
+	file.close();
+
 	if (save)
 	{
+		std::ifstream tmp(fileInfo.absPath.c_str());
+		if (tmp.is_open())
+		{
+			save->buffer = std::string((std::istreambuf_iterator<char>(tmp)),
+				(std::istreambuf_iterator<char>()));
+		}
 		save->modified = modified;
 	}
-	file.close();
 	auto destPath = _destination + fileInfo.relPath;
 	std::ofstream outputFile(destPath.c_str());
 	if (outputFile.is_open() == false)
@@ -477,23 +483,13 @@ void Application::projectSave()
 	{
 		for (auto &s : _rtSaves)
 		{
-			auto filePath = s.path + ".sidtmpsave";
 			if (s.modified)
 			{
 				_project.save.resize(_project.save.size() + 1);
 				auto &save = _project.save.back();
 				save.path = s.dest;
-				std::ifstream file(filePath);
-				if (file.is_open() == false)
-				{
-					std::cerr << "Error reading " << filePath << std::endl;
-					//ERROR
-					continue;
-				}
-				save.buffer = std::string((std::istreambuf_iterator<char>(file)),
-					(std::istreambuf_iterator<char>()));
+				save.buffer = std::move(s.buffer);
 			}
-			DeleteFile(filePath.c_str());
 		}
 	}
 
