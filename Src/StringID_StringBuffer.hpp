@@ -45,6 +45,7 @@ public:
 	StringID_StringBuffer();
 	~StringID_StringBuffer();
 	char *copy(const char *str, size_t size);
+	size_t getSize() const;
 private:
 	StringID_LFChunkList _list;
 	StringID_Chunk      *_chunk;
@@ -169,4 +170,10 @@ char *StringID_StringBuffer::copy(const char *str, size_t size)
 	}
 	return STRINGID_NULL;
 }
+
+size_t StringID_StringBuffer::getSize() const
+{
+	return _list.getSize() * STRINGID_BUFFER_CHUNK_SIZE;
+}
+
 #endif

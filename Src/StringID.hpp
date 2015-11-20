@@ -137,16 +137,6 @@ StringID::StringID(StringIDCharWrapper str)
 		STRINGID_DB_ADD_DYNAMIC(str.val, _id);
 }
 
-//template <int N>
-//StringID::StringID(const char(&str)[N])
-//{
-//	_id = STRINGID_HASH(str);
-//#if STRINGID_DEBUG_ENABLED
-//	_str = 
-//#endif
-//	STRINGID_DB_ADD_LITERAL(str, _id);
-//}
-
 #if STRINGID_SUPPORT_STD_STRING
 StringID::StringID(const std::string &str)
 {

@@ -24,6 +24,9 @@ class StringID_DBMap : public StringIdMapType
 public:
 	const char *findStringID(StringIDType id) const;
 	void insertStringID(const char *str, StringIDType id);
+	inline size_t getSize() const;
+	inline void lock() const;
+	inline void unlock() const;
 private:
 	// todo -> to pass to cpp11, platform specific
 	mutable std::mutex _mutex;
@@ -35,11 +38,14 @@ public:
 	inline const char *addLiteralString(const char *str, StringIDType id);
 	inline const char *addDynamicString(const char *str, StringIDType id);
 	inline const char *getString(StringIDType id) { return STRINGID_NULL; }
+	inline size_t     getSize() const;
+	inline uint32_t   saveToBuffer(void *buffer, size_t bufferSize) const;
 private:
 	StringID_DBMap _map;
 };
 
-
+size_t StringIDDB_GetBinarySaveSize();
+uint32_t StringIDDB_SaveBinary(void *buff, size_t allocatedSize);
 #endif
 
 
@@ -110,6 +116,54 @@ const char *StringID_Database::addDynamicString(const char *str, StringIDType id
 	return nullptr;
 }
 
+size_t StringID_Database::getSize() const
+{
+	return _map.getSize();
+}
+
+template <typename T> 
+void copyToBuffer(void *buffer, uint32_t &cursor, const T &value)
+{
+	void *b = (void*)(size_t(buffer) + size_t(cursor));
+	const size_t size = sizeof(T);
+	memcpy(b, &value, size);
+	cursor += size;
+}
+
+void copyToBuffer(void *buffer, uint32_t &cursor, const char *value)
+{
+	void *b = (void*)(size_t(buffer) + size_t(cursor));
+	const size_t size = sizeof(const char) * (strlen(value) + 1);
+	memcpy(b, (void*)value, size);
+	cursor += size;
+}
+
+uint32_t StringID_Database::saveToBuffer(void *buffer, size_t bufferSize) const
+{
+	uint32_t cursorId = 0;
+	const uint32_t entryNumber = getSize();
+	uint32_t cursorStr =
+		sizeof(uint32_t)
+		+ sizeof(StringIDType) * entryNumber
+		+ sizeof(uint32_t) * entryNumber;
+	if (cursorStr > bufferSize)
+		return 0;
+	_map.lock();
+
+	copyToBuffer(buffer, cursorId, entryNumber);
+
+	for (auto &it : _map)
+	{
+		copyToBuffer(buffer, cursorId, it.first);
+		uint32_t strPos = cursorStr;
+		copyToBuffer(buffer, cursorStr, it.second);
+		copyToBuffer(buffer, cursorId, strPos);
+	}
+
+	_map.unlock();
+	return cursorStr;
+}
+
 const char *StringID_DBMap::findStringID(StringIDType id) const
 {
 	std::lock_guard<std::mutex> lock(_mutex);
@@ -126,6 +180,45 @@ void StringID_DBMap::insertStringID(const char *str, StringIDType id)
 	std::lock_guard<std::mutex> lock(_mutex);
 	STRINGID_ASSERT(find(id) == end() && "ID already exists.");
 	insert(std::make_pair(id, str));
+}
+
+size_t StringID_DBMap::getSize() const
+{
+	std::lock_guard<std::mutex> lock(_mutex);
+	return size();
+}
+
+void StringID_DBMap::lock() const
+{
+	_mutex.lock();
+}
+
+void StringID_DBMap::unlock() const
+{
+	_mutex.unlock();
+}
+
+size_t StringIDDB_GetBinarySaveSize()
+{
+	size_t entryNumber = StringIDDB.getSize();
+	if (entryNumber == 0)
+		return 0;
+
+	size_t result = 0;
+	// Str buffer
+	result += StringIDBuffer.getSize();
+	// Ids
+	result += entryNumber * sizeof(StringIDType);
+	// Ids str addr
+	result += entryNumber * sizeof(uint32_t);
+	// Number of entry
+	result += sizeof(uint32_t);
+	return result;
+}
+
+uint32_t StringIDDB_SaveBinary(void *buff, size_t allocatedSize)
+{
+	return StringIDDB.saveToBuffer(buff, allocatedSize);
 }
 
 #endif

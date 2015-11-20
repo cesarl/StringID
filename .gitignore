@@ -202,3 +202,4 @@ FastBuild/report.html
 *.sid
 *.SIDSave
 *.SIDProj
+*.SIDdb

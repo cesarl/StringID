@@ -301,7 +301,10 @@ bool Application::waitAndTreatFile()
 	{
 		std::size_t it = _fileCounter.fetch_add(1);
 		if (it >= fileNumber)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			continue;
+		}
 		treatFile(it);
 		_treatedFileCounter.fetch_add(1);
 	}
@@ -582,6 +585,28 @@ void Application::run()
 		else
 		{
 			std::cout << "Noting to do !" << std::endl;
+		}
+
+
+		size_t sizeOfDB = StringIDDB_GetBinarySaveSize();
+		void *dbBuffer = malloc(sizeOfDB);
+		uint32_t dbSize = StringIDDB_SaveBinary(dbBuffer, sizeOfDB);
+		auto dbTempTestDest = _destination + "DBTest.SIDdb";
+		std::ofstream tmpDB(dbTempTestDest.c_str()/*, std::ios::binary*/);
+		tmpDB.write((const char*)dbBuffer, dbSize);
+
+		//debug
+		uint32_t i = 0;
+		uint32_t entryNbr = (uint32_t)(*(char *)(dbBuffer));
+		void* ptr = (void*)(size_t(dbBuffer) + sizeof(uint32_t));
+		while (i < entryNbr)
+		{
+			std::cout << StringIDType(*(char *)(ptr));
+			ptr = (void*)(size_t(ptr) + sizeof(StringIDType));
+			uint32_t index = uint32_t(*((char *)(ptr)));
+			std::cout << " : " << (char *)(size_t(dbBuffer) + index) << std::endl;
+			ptr = (void*)(size_t(ptr) + sizeof(uint32_t));
+			++i;
 		}
 	}
 }
