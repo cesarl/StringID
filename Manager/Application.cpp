@@ -596,17 +596,15 @@ void Application::run()
 		tmpDB.write((const char*)dbBuffer, dbSize);
 
 		//debug
-		uint32_t i = 0;
-		uint32_t entryNbr = *(uint32_t*)(dbBuffer);
-		void* ptr = (void*)(size_t(dbBuffer) + sizeof(uint32_t));
-		while (i < entryNbr)
+		StringIDDB_iterator it(dbBuffer);
+		while (it.isValid())
 		{
-			std::cout << *(StringIDType *)(ptr);
-			ptr = (void*)(size_t(ptr) + sizeof(StringIDType));
-			uint32_t index = *(uint32_t *)(ptr);
-			std::cout << " : " << (char *)(size_t(dbBuffer) + index) << std::endl;
-			ptr = (void*)(size_t(ptr) + sizeof(uint32_t));
-			++i;
+			StringIDType id;
+			const char *str;
+			it.get(id, str);
+			std::cout << id;
+			std::cout << " : " << str << std::endl;
+			it.next();
 		}
 	}
 }

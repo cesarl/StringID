@@ -46,6 +46,29 @@ private:
 
 size_t StringIDDB_GetBinarySaveSize();
 uint32_t StringIDDB_SaveBinary(void *buff, size_t allocatedSize);
+
+class StringIDDB_iterator
+{
+public:
+	StringIDDB_iterator(const void *buffer);
+	bool isValid() const;
+	void get(StringIDType &id, const char *&str) const;
+	void next();
+private:
+	const void *_buffer;
+	void *      _ptr;
+	uint32_t    _size;
+	uint32_t    _index;
+	
+	StringIDType _id;
+	const char * _str;
+
+	StringIDDB_iterator() = delete;
+	StringIDDB_iterator(const StringIDDB_iterator &o) = delete;
+	StringIDDB_iterator(StringIDDB_iterator &&o) = delete;
+	StringIDDB_iterator &operator=(const StringIDDB_iterator &o) = delete;
+	StringIDDB_iterator &operator=(StringIDDB_iterator &&o) = delete;
+};
 #endif
 
 
@@ -219,6 +242,41 @@ size_t StringIDDB_GetBinarySaveSize()
 uint32_t StringIDDB_SaveBinary(void *buff, size_t allocatedSize)
 {
 	return StringIDDB.saveToBuffer(buff, allocatedSize);
+}
+
+StringIDDB_iterator::StringIDDB_iterator(const void *buffer)
+{
+	_index = 0;
+	if (buffer == STRINGID_NULL)
+	{
+		_size = 0;
+		return;
+	}
+	_buffer = buffer;
+	_size = *(uint32_t*)(buffer);
+	_ptr = (void*)(size_t(buffer) + sizeof(uint32_t));
+	next();
+}
+
+bool StringIDDB_iterator::isValid() const
+{
+	return _index < _size;
+}
+
+void StringIDDB_iterator::get(StringIDType &id, const char *&str) const
+{
+	id = _id;
+	str = _str;
+}
+
+void StringIDDB_iterator::next()
+{
+	_id = *(StringIDType *)(_ptr);
+	_ptr = (void*)(size_t(_ptr) + sizeof(StringIDType));
+	uint32_t index = *(uint32_t *)(_ptr);
+	_str = (char *)(size_t(_buffer) + index);
+	_ptr = (void*)(size_t(_ptr) + sizeof(uint32_t));
+	++_index;
 }
 
 #endif
