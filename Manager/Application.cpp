@@ -597,13 +597,13 @@ void Application::run()
 
 		//debug
 		uint32_t i = 0;
-		uint32_t entryNbr = (uint32_t)(*(char *)(dbBuffer));
+		uint32_t entryNbr = *(uint32_t*)(dbBuffer);
 		void* ptr = (void*)(size_t(dbBuffer) + sizeof(uint32_t));
 		while (i < entryNbr)
 		{
-			std::cout << StringIDType(*(char *)(ptr));
+			std::cout << *(StringIDType *)(ptr);
 			ptr = (void*)(size_t(ptr) + sizeof(StringIDType));
-			uint32_t index = uint32_t(*((char *)(ptr)));
+			uint32_t index = *(uint32_t *)(ptr);
 			std::cout << " : " << (char *)(size_t(dbBuffer) + index) << std::endl;
 			ptr = (void*)(size_t(ptr) + sizeof(uint32_t));
 			++i;
