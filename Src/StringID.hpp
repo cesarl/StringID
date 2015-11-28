@@ -52,8 +52,12 @@ public:
 	explicit StringID(const std::string &str);
 #endif
 #endif
-	explicit StringID(const char *str, const StringIDType id);
+	explicit StringID(StringIDCharWrapper str, StringIDType id);
 	explicit StringID(const StringIDType id);
+	template <int N> StringID(const char(&str)[N], StringIDType id)
+	{
+		internalConstructLiteral(str, id);
+	}
 	StringID(const StringID &o);
 	StringID &operator=(const StringID &o);
 #if STRINGID_CPP11
@@ -70,6 +74,7 @@ private:
 #if STRINGID_RT_HASH_ENABLED
 	void internalConstructLiteral(const char *str);
 #endif
+	void internalConstructLiteral(const char *str, StringIDType id);
 
 	StringIDType _id;
 #if STRINGID_DEBUG_ENABLED
@@ -118,15 +123,24 @@ void StringID::internalConstructLiteral(const char *str)
 		STRINGID_DB_ADD_LITERAL(str, _id);
 }
 
-StringID::StringID(const char *str, const StringIDType id)
-	: _id(id)
-#if STRINGID_DEBUG_ENABLED
-	, _str(str)
-#endif
+void StringID::internalConstructLiteral(const char *str, StringIDType id)
 {
-	STRINGID_UNUSED(str);
+	_id = id;
+#if STRINGID_DEBUG_ENABLED
+	_str =
+#endif
+		STRINGID_DB_ADD_LITERAL(str, _id);
 }
-////
+
+StringID::StringID(StringIDCharWrapper str, const StringIDType id)
+	: _id(id)
+{
+#if STRINGID_DEBUG_ENABLED
+	_str =
+#endif
+	    STRINGID_DB_ADD_DYNAMIC(str.val, id);
+}
+
 #if STRINGID_RT_HASH_ENABLED
 StringID::StringID(StringIDCharWrapper str)
 {
@@ -148,7 +162,6 @@ StringID::StringID(const std::string &str)
 }
 #endif
 #endif
-////
 
 StringID::StringID(const StringIDType id)
 	: _id(id)

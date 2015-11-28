@@ -40,12 +40,14 @@ public:
 	inline const char *getString(StringIDType id) { return STRINGID_NULL; }
 	inline size_t     getSize() const;
 	inline uint32_t   saveToBuffer(void *buffer, size_t bufferSize) const;
+	inline bool       loadFromBuffer(const void *buffer, size_t bufferSize);
 private:
 	StringID_DBMap _map;
 };
 
-size_t StringIDDB_GetBinarySaveSize();
+size_t   StringIDDB_GetBinarySaveSize();
 uint32_t StringIDDB_SaveBinary(void *buff, size_t allocatedSize);
+bool     StringIDDB_LoadBinary(const void *buff, size_t allocatedSize);
 
 class StringIDDB_iterator
 {
@@ -187,6 +189,20 @@ uint32_t StringID_Database::saveToBuffer(void *buffer, size_t bufferSize) const
 	return cursorStr;
 }
 
+bool StringID_Database::loadFromBuffer(const void *buffer, size_t bufferSize)
+{
+	StringIDDB_iterator it(buffer);
+	while (it.isValid())
+	{
+		StringIDType id;
+		const char *str;
+		it.get(id, str);
+		STRINGID_DB_ADD_DYNAMIC(str, id);
+		it.next();
+	}
+	return true;
+}
+
 const char *StringID_DBMap::findStringID(StringIDType id) const
 {
 	std::lock_guard<std::mutex> lock(_mutex);
@@ -242,6 +258,11 @@ size_t StringIDDB_GetBinarySaveSize()
 uint32_t StringIDDB_SaveBinary(void *buff, size_t allocatedSize)
 {
 	return StringIDDB.saveToBuffer(buff, allocatedSize);
+}
+
+bool     StringIDDB_LoadBinary(const void *buff, size_t allocatedSize)
+{
+	return StringIDDB.loadFromBuffer(buff, allocatedSize);
 }
 
 StringIDDB_iterator::StringIDDB_iterator(const void *buffer)

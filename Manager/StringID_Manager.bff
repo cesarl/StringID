@@ -14,7 +14,7 @@
 	VCXProject( '$ProjectName$-proj' )
 	{
 		.ProjectOutput				= '$ProjectDestPath$\$ProjectName$.vcxproj'
-		.ProjectInputPaths			= { '$ProjectPath$\', '$ExternalPath$\', '../src/' }
+		.ProjectInputPaths			= { '$ProjectPath$\', '../src/' }
         .ProjectBasePath            = { '$ProjectPath$\' }
 
 		.ProjectAllowedFileExtensions = { '.h' '.cpp' '.c' '.hh' '.hpp' '.inl' }
