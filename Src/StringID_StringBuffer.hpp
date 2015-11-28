@@ -45,10 +45,11 @@ public:
 	StringID_StringBuffer();
 	~StringID_StringBuffer();
 	char *copy(const char *str, size_t size);
-	size_t getSize() const;
+	uint64_t getSize() const;
 private:
 	StringID_LFChunkList _list;
 	StringID_Chunk      *_chunk;
+	volatile uint64_t    _size;
 };
 
 #ifdef STRINGID_IMPL
@@ -136,6 +137,7 @@ void resetStringIDChunck(StringID_Chunk *chunk)
 }
 
 StringID_StringBuffer::StringID_StringBuffer()
+	: _size(0)
 {
 	_chunk = _list.try_grow();
 }
@@ -165,15 +167,24 @@ char *StringID_StringBuffer::copy(const char *str, size_t size)
 			char *res = chunk->buffer + originalIndex;
 			strcpy(res, str);
 			res[size] = '\0';
+
+			while (true)
+			{
+				uint64_t totalSize = _size;
+				uint64_t oldTotalSize = totalSize;
+				totalSize += size + 1;
+				if (_InterlockedCompareExchange64((__int64 *)(&_size), totalSize, oldTotalSize) == oldTotalSize)
+					break;
+			}
 			return res;
 		}
 	}
 	return STRINGID_NULL;
 }
 
-size_t StringID_StringBuffer::getSize() const
+uint64_t StringID_StringBuffer::getSize() const
 {
-	return _list.getSize() * STRINGID_BUFFER_CHUNK_SIZE;
+	return _size;
 }
 
 #endif
