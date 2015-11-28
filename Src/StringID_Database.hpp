@@ -77,11 +77,13 @@ private:
 #ifdef STRINGID_IMPL
 
 #if STRINGID_DATABASE
-StringID_Database     StringIDDB;
+static inline StringID_Database &StringID_DatabaseSingleton() { static StringID_Database db; return db; }
+#define StringIDDB StringID_DatabaseSingleton()
 #endif
 
 #if STRINGID_COPY_STRINGS
-StringID_StringBuffer StringIDBuffer;
+static inline StringID_StringBuffer &StringID_StringBufferSingleton() { static StringID_StringBuffer sb; return sb; }
+#define StringIDBuffer StringID_StringBufferSingleton()
 #endif
 
 #if STRINGID_DATABASE
