@@ -103,7 +103,7 @@ bool Application::init(int argc, char *argv[])
 				std::string source = argv[sourcesIndex];
 				while (source.empty() == false && source[0] != '-')
 				{
-					_sources.push_back(CleanPath(MakePathAbsolute(source)) + "/");
+					_sources.push_back(CleanPath(MakePathAbsolute(source)));
 					++sourcesIndex;
 					source = "";
 					if (sourcesIndex < argc)
@@ -454,11 +454,15 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 		save->modified = modified;
 	}
 	auto destPath = _destination + fileInfo.relPath;
-	std::ofstream outputFile(destPath.c_str());
-	if (outputFile.is_open() == false)
-		std::cerr << "Error opening : " << destPath << std::endl;
-	std::cout << "Debug writing to : " << destPath << std::endl;
-	outputFile << output;
+	if (modified || destPath != fileInfo.absPath)
+	{
+		std::ofstream outputFile(destPath.c_str());
+		if (outputFile.is_open() == false)
+			std::cerr << "Error opening : " << destPath << std::endl;
+		std::cout << "Debug writing to : " << destPath << std::endl;
+		std::cout << "Debug writing for : " << fileInfo.absPath << std::endl;
+		outputFile << output;
+	}
 
 }
 
