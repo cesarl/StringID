@@ -49,7 +49,7 @@ public:
 		internalConstructLiteral(str);
 	}
 #if STRINGID_SUPPORT_STD_STRING
-	explicit StringID(const std::string &str);
+	StringID(const std::string &str);
 #endif
 #endif
 	explicit StringID(StringIDCharWrapper str, StringIDType id);

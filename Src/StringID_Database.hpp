@@ -37,7 +37,7 @@ class StringID_Database
 public:
 	inline const char *addLiteralString(const char *str, StringIDType id);
 	inline const char *addDynamicString(const char *str, StringIDType id);
-	inline const char *getString(StringIDType id) { return STRINGID_NULL; }
+	inline const char *getString(StringIDType id) const;
 	inline size_t     getSize() const;
 	inline uint32_t   saveToBuffer(void *buffer, size_t bufferSize) const;
 	inline bool       loadFromBuffer(const void *buffer, size_t bufferSize);
@@ -139,6 +139,18 @@ const char *StringID_Database::addDynamicString(const char *str, StringIDType id
 	return copy;
 #endif
 	return nullptr;
+}
+
+const char *StringID_Database::getString(StringIDType id) const
+{
+#if STRINGID_CHECK_COLLISION
+	const char *find = _map.findStringID(id);
+	if (find != STRINGID_NULL)
+	{
+		return find;
+	}
+#endif
+	return STRINGID_NULL;
 }
 
 size_t StringID_Database::getSize() const
