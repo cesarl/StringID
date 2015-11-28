@@ -16,6 +16,7 @@ int main(int argc, char **argv)
 	std::size_t elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	
 	std::cout << elapsedTime  << " micros" << std::endl;
-
+	int i;
+	std::cin >> i;
 	return EXIT_SUCCESS;
 }

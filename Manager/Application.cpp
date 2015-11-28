@@ -524,6 +524,25 @@ void Application::run()
 		//_initGui();
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+
+	auto dbTempTest = _destination + "DBTest.SIDdb";
+
+	std::ifstream file(dbTempTest.c_str(), std::ios::binary | std::ios::ate);
+	if (file.is_open())
+	{
+		std::streamsize size = file.tellg();
+		file.seekg(0, std::ios::beg);
+
+		std::vector<char> buffer(size);
+		if (file.read(buffer.data(), size))
+		{
+			StringIDDB_LoadBinary(buffer.data(), size);
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
 	projectLoad();
 
 	if (_undo == true)
@@ -592,19 +611,19 @@ void Application::run()
 		void *dbBuffer = malloc(sizeOfDB);
 		uint32_t dbSize = StringIDDB_SaveBinary(dbBuffer, sizeOfDB);
 		auto dbTempTestDest = _destination + "DBTest.SIDdb";
-		std::ofstream tmpDB(dbTempTestDest.c_str()/*, std::ios::binary*/);
+		std::ofstream tmpDB(dbTempTestDest.c_str(), std::ios::binary);
 		tmpDB.write((const char*)dbBuffer, dbSize);
 
 		//debug
-		StringIDDB_iterator it(dbBuffer);
-		while (it.isValid())
-		{
-			StringIDType id;
-			const char *str;
-			it.get(id, str);
-			std::cout << id;
-			std::cout << " : " << str << std::endl;
-			it.next();
-		}
+		//StringIDDB_iterator it(dbBuffer);
+		//while (it.isValid())
+		//{
+		//	StringIDType id;
+		//	const char *str;
+		//	it.get(id, str);
+		//	std::cout << id;
+		//	std::cout << " : " << str << std::endl;
+		//	it.next();
+		//}
 	}
 }
