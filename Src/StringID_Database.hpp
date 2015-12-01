@@ -77,13 +77,19 @@ private:
 #ifdef STRINGID_IMPL
 
 #if STRINGID_DATABASE
+#pragma warning(push)
+#pragma warning(disable: 4640)
 static inline StringID_Database &StringID_DatabaseSingleton() { static StringID_Database db; return db; }
 #define StringIDDB StringID_DatabaseSingleton()
+#pragma warning(pop)
 #endif
 
 #if STRINGID_COPY_STRINGS
+#pragma warning(push)
+#pragma warning(disable: 4640)
 static inline StringID_StringBuffer &StringID_StringBufferSingleton() { static StringID_StringBuffer sb; return sb; }
 #define StringIDBuffer StringID_StringBufferSingleton()
+#pragma warning(pop)
 #endif
 
 #if STRINGID_DATABASE
