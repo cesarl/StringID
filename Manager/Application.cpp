@@ -612,15 +612,15 @@ void Application::run()
 		tmpDB.write((const char*)dbBuffer, dbSize);
 
 		//debug
-		//StringIDDB_iterator it(dbBuffer);
-		//while (it.isValid())
-		//{
-		//	StringIDType id;
-		//	const char *str;
-		//	it.get(id, str);
-		//	std::cout << id;
-		//	std::cout << " : " << str << std::endl;
-		//	it.next();
-		//}
+		StringIDDB_iterator it(dbBuffer);
+		while (it.isValid())
+		{
+			StringIDType id;
+			const char *str;
+			it.get(id, str);
+			std::cout << id;
+			std::cout << " : " << str << std::endl;
+			it.next();
+		}
 	}
 }
