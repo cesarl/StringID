@@ -343,7 +343,7 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 	3 : , 
 	4 : 0x123
 	*/
-	std::regex regStringAndHash("(.*?\\bStringID\\s*[(]{1}\\s*\")(.+?)(\"\\s*,\\s*)(0x[\\d|a-f]+|[\\d|a-f]+)\\s*[)]{1}");
+	std::regex regStringAndHash("(.*?\\bStringID\\s*[(]{1}\\s*[\"]{1})(.+?)([\"]{1}\\s*,\\s*)(0x[\\d|a-f]+|[\\d|a-f]+){1}\\s*[)]{1}");
 	std::match_results<std::string::const_iterator> match;
 
 	bool disabledScope = false;
@@ -390,19 +390,12 @@ void Application::searchAndReplaceInFile(const FileInfo &fileInfo, Save *save)
 				StringIDType id = strtoll(h.c_str(), nullptr, 16);
 				StringID sid = StringID(str);
 
-				if (sid.getId() != id)
-				{
-					std::string replacer = "$1$2\", ";
-					replacer += IntToHex(sid.getId());
-					replacer += ")";
-					line += std::regex_replace(lineCopy, regStringAndHash, replacer, flags);
-					pass = true;
-					modified = true;
-				}
-				else
-				{
-					line = lineCopy;
-				}
+				std::string replacer = "$1$2\", ";
+				replacer += IntToHex(sid.getId());
+				replacer += ")";
+				line += std::regex_replace(lineCopy, regStringAndHash, replacer, flags);
+				pass = true;
+				modified = true;
 				lineCopy = match.suffix().str();
 			}
 			if (pass)
