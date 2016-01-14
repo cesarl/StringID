@@ -224,30 +224,7 @@ static Fnv64_t fnv_64_str(const char *str, Fnv64_t hval)
 * NOTE: To use the recommended 64 bit FNV-1a hash, use FNV1A_64_INIT as the
 * 	 hval arg on the first call to either fnv_64a_buf() or fnv_64a_str().
 */
-static Fnv64_t fnv_64a_str(const char *str, Fnv64_t hval)
-{
-	const unsigned char *s = (const unsigned char *)str;	/* unsigned string */
 
-	/*
-	* FNV-1a hash each octet of the string
-	*/
-	while (*s) {
-
-		/* xor the bottom with the current octet */
-		hval ^= (Fnv64_t)*s++;
-
-		/* multiply by the 64 bit FNV magic prime mod 2^64 */
-#if defined(NO_FNV_GCC_OPTIMIZATION)
-		hval *= FNV_64_PRIME;
-#else /* NO_FNV_GCC_OPTIMIZATION */
-		hval += (hval << 1) + (hval << 4) + (hval << 5) +
-			(hval << 7) + (hval << 8) + (hval << 40);
-#endif /* NO_FNV_GCC_OPTIMIZATION */
-	}
-
-	/* return our new hash value */
-	return hval;
-}
 
 #endif /* __FNV_H__ */
 
