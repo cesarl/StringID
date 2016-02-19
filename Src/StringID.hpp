@@ -220,14 +220,8 @@ private:
 
 #ifdef STRINGID_IMPL
 
-// For offsetof
-#include <cstddef>
-
 // For interlock exchanges
 #include <intrin.h>
-
-// For memset
-#include <memory.h>
 
 // For strcpy
 #include <string.h>
