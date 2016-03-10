@@ -604,23 +604,23 @@ void Application::run()
 		}
 
 
-		size_t sizeOfDB = StringIDDB_GetBinarySaveSize();
-		void *dbBuffer = malloc(sizeOfDB);
-		uint32_t dbSize = StringIDDB_SaveBinary(dbBuffer, sizeOfDB);
-		auto dbTempTestDest = _destination + "DBTest.SIDdb";
-		std::ofstream tmpDB(dbTempTestDest.c_str(), std::ios::binary);
-		tmpDB.write((const char*)dbBuffer, dbSize);
+		//size_t sizeOfDB = StringIDDB_GetBinarySaveSize();
+		//void *dbBuffer = malloc(sizeOfDB);
+		//uint32_t dbSize = StringIDDB_SaveBinary(dbBuffer, sizeOfDB);
+		//auto dbTempTestDest = _destination + "DBTest.SIDdb";
+		//std::ofstream tmpDB(dbTempTestDest.c_str(), std::ios::binary);
+		//tmpDB.write((const char*)dbBuffer, dbSize);
 
-		//debug
-		StringIDDB_iterator it(dbBuffer);
-		while (it.isValid())
-		{
-			StringIDType id;
-			const char *str;
-			it.get(id, str);
-			std::cout << id;
-			std::cout << " : " << str << std::endl;
-			it.next();
-		}
+		////debug
+		//StringIDDB_iterator it(dbBuffer);
+		//while (it.isValid())
+		//{
+		//	StringIDType id;
+		//	const char *str;
+		//	it.get(id, str);
+		//	std::cout << id;
+		//	std::cout << " : " << str << std::endl;
+		//	it.next();
+		//}
 	}
 }
